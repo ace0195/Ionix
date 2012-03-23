@@ -5,14 +5,9 @@
 package org.fcrepo.server.security.xacml.pdp.decorator;
 
 import java.io.InputStream;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import java.util.Date;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.fcrepo.server.Context;
 import org.fcrepo.server.errors.ServerException;
@@ -20,6 +15,8 @@ import org.fcrepo.server.management.Management;
 import org.fcrepo.server.storage.types.Datastream;
 import org.fcrepo.server.storage.types.RelationshipTuple;
 import org.fcrepo.server.storage.types.Validation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Used to provide an explicitly paramterised view of API-M methods that affect the policy cache
@@ -43,7 +40,7 @@ public class ManagementMethodInvocation
 
     /** Logger for this class. */
     private static Logger LOG =
-            LoggerFactory.getLogger(PolicyIndexInvocationHandler.class.getName());
+            LoggerFactory.getLogger(ManagementMethodInvocation.class.getName());
 
     // represents the type of operation
     public static enum Action {

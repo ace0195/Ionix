@@ -18,10 +18,13 @@
 
 package org.fcrepo.server.security.xacml.pdp.finder.policy;
 
-import java.net.URISyntaxException;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.fcrepo.server.security.xacml.pdp.MelcoePDPException;
+import org.fcrepo.server.security.xacml.pdp.data.PolicyIndexException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.AbstractPolicy;
 import com.sun.xacml.EvaluationCtx;
@@ -29,11 +32,6 @@ import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.fcrepo.server.security.xacml.pdp.data.PolicyIndexException;
 
 /**
  * This is the PolicyFinderModule for the PDP. Its purpose is to basically find
@@ -48,7 +46,7 @@ public class GenericPolicyFinderModule
     private static final Logger logger =
             LoggerFactory.getLogger(GenericPolicyFinderModule.class);
 
-    private PolicyManager policyManager = null;
+    private PolicyManager m_policyManager = null;
 
     public GenericPolicyFinderModule() {
         super();
@@ -65,23 +63,18 @@ public class GenericPolicyFinderModule
         return true;
     }
 
+    public void setPolicyManager(PolicyManager policyManager){
+        m_policyManager = policyManager;
+    }
+
     /**
      * Initialize this module. Typically this is called by
      * <code>PolicyFinder</code> when a PDP is created.
      *
-     * @param finder
-     *        the <code>PolicyFinder</code> using this module
+
      */
-    @Override
-    public void init(PolicyFinder finder) {
-        try {
-            policyManager = new PolicyManager(finder);
-        } catch (URISyntaxException use) {
-            logger.error("Error initialising DBPolicyFinderModule due to improper URI:",
-                           use);
-        } catch (PolicyIndexException pdme) {
-            logger.error("Error initialising DBPolicyFinderModule:", pdme);
-        }
+    public void init() throws MelcoePDPException{
+        if (m_policyManager == null) throw new MelcoePDPException("PolicyFinder requires a PolicyManager");
     }
 
     /**
@@ -97,7 +90,7 @@ public class GenericPolicyFinderModule
     @Override
     public PolicyFinderResult findPolicy(EvaluationCtx context) {
         try {
-            AbstractPolicy policy = policyManager.getPolicy(context);
+            AbstractPolicy policy = m_policyManager.getPolicy(context);
 
             if (policy == null) {
                 return new PolicyFinderResult();
@@ -115,5 +108,10 @@ public class GenericPolicyFinderModule
             codes.add(Status.STATUS_PROCESSING_ERROR);
             return new PolicyFinderResult(new Status(codes, pdme.getMessage()));
         }
+    }
+
+    @Override
+    public void init(PolicyFinder arg0) {
+
     }
 }

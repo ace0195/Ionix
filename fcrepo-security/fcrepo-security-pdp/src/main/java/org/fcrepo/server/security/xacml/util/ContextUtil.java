@@ -24,12 +24,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-
 import java.lang.reflect.Constructor;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,6 +38,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.fcrepo.common.Constants;
+import org.fcrepo.server.security.xacml.MelcoeXacmlException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.attr.AnyURIAttribute;
@@ -51,18 +57,6 @@ import com.sun.xacml.ctx.RequestCtx;
 import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Subject;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.fcrepo.common.Constants;
-
-import org.fcrepo.server.security.xacml.MelcoeXacmlException;
 
 
 /**
@@ -184,10 +178,10 @@ public class ContextUtil {
             File configPEPFile =
                     new File(Constants.FEDORA_HOME,
                              "server/config/config-melcoe-pep.xml");
-            InputStream is = new FileInputStream(configPEPFile);
-            if (is == null) {
+            if (!configPEPFile.exists()) {
                 throw new MelcoeXacmlException("Could not locate config file: config-melcoe-pep.xml");
             }
+            InputStream is = new FileInputStream(configPEPFile);
 
             DocumentBuilderFactory factory =
                     DocumentBuilderFactory.newInstance();
