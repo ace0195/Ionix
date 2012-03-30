@@ -40,6 +40,7 @@ import com.sun.xacml.TargetMatch;
 import com.sun.xacml.TargetSection;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.ctx.Status;
+import com.sun.xacml.finder.PolicyFinder;
 
 /**
  * This class interacts with the policy cache on behalf of the PolicyFinder
@@ -56,6 +57,8 @@ public class PolicyManager {
     private final PolicyIndex m_policyIndex;
 
     private PolicyCombiningAlgorithm m_combiningAlg = null;
+    
+    private final PolicyFinder m_policyFinder;
 
     private Target m_target = null;
 
@@ -83,15 +86,12 @@ public class PolicyManager {
      * @throws URISyntaxException
      * @throws {@link PolicyStoreException}
      */
-    public PolicyManager(PolicyIndex policyIndex, PolicyCombiningAlgorithm combiningAlg)
-            throws URISyntaxException, PolicyIndexException {
+    public PolicyManager(PolicyIndex policyIndex, PolicyCombiningAlgorithm combiningAlg,
+                         PolicyFinder policyFinder) {
 
         m_policyIndex = policyIndex;
         m_combiningAlg = combiningAlg;
-        //m_policyReader = new PolicyReader(policyFinder, null);
-
-
-
+        m_policyFinder = policyFinder;
         m_target =
                 new Target(new TargetSection(null,
                                              TargetMatch.SUBJECT,
@@ -106,7 +106,7 @@ public class PolicyManager {
                                              TargetMatch.ENVIRONMENT,
                                              PolicyMetaData.XACML_VERSION_2_0));
     }
-
+    
     /**
      * Obtains a policy or policy set of matching policies from the policy
      * store. If more than one policy is returned it creates a dynamic policy
@@ -121,7 +121,7 @@ public class PolicyManager {
     public AbstractPolicy getPolicy(EvaluationCtx eval)
             throws TopLevelPolicyException, PolicyIndexException {
         Map<String, AbstractPolicy> potentialPolicies =
-                m_policyIndex.getPolicies(eval);
+                m_policyIndex.getPolicies(eval, m_policyFinder);
         logger.debug("Obtained policies: " + potentialPolicies.size());
 
         AbstractPolicy policy = matchPolicies(eval, potentialPolicies);

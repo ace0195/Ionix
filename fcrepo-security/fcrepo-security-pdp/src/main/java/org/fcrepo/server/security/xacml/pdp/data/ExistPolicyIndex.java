@@ -47,6 +47,7 @@ import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 import com.sun.xacml.AbstractPolicy;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.ParsingException;
+import com.sun.xacml.finder.PolicyFinder;
 
 /**
  * A PolicyIndex based on an XPath XML database.
@@ -189,7 +190,7 @@ public class ExistPolicyIndex extends XPathPolicyIndex implements PolicyIndex {
 
 
     @Override
-    public Map<String, AbstractPolicy> getPolicies(EvaluationCtx eval)
+    public Map<String, AbstractPolicy> getPolicies(EvaluationCtx eval, PolicyFinder policyFinder)
     throws PolicyIndexException {
 
         Map<String, Set<AttributeBean>> attributeMap;
@@ -220,7 +221,8 @@ public class ExistPolicyIndex extends XPathPolicyIndex implements PolicyIndex {
                     // get the result's document name (the query result just contains content as selected by the xpath query)
                     String id = res.getDocumentId();
                     log.trace("Query matched document: " + IdToName(id));
-                    documents.put(IdToName(id), m_policyReader.readPolicy(((String)m_collection.getResource(id).getContent()).getBytes("UTF-8")));
+                    Document policyDoc = m_policyReader.readPolicy(((String)m_collection.getResource(id).getContent()).getBytes("UTF-8"));
+                    documents.put(IdToName(id), handleDocument(policyDoc, policyFinder));
                 }
             } catch (XMLDBException e) {
                 log.error("Error retrieving query results " + e.getMessage(), e);
@@ -243,7 +245,7 @@ public class ExistPolicyIndex extends XPathPolicyIndex implements PolicyIndex {
 
 
     @Override
-    public AbstractPolicy getPolicy(String name) throws PolicyIndexException {
+    public AbstractPolicy getPolicy(String name, PolicyFinder policyFinder) throws PolicyIndexException {
         try {
             readLock.lock();
             XMLResource resource = (XMLResource) m_collection.getResource(nameToId(name));
@@ -251,7 +253,8 @@ public class ExistPolicyIndex extends XPathPolicyIndex implements PolicyIndex {
                 log.error("Attempting to get non-existant resource " + name);
                 throw new PolicyIndexException("Attempting to get non-existant resource " + name);
             }
-            return m_policyReader.readPolicy(((String)resource.getContent()).getBytes("UTF-8"));
+            Document policyDoc = m_policyReader.readPolicy(((String)resource.getContent()).getBytes("UTF-8"));
+            return handleDocument(policyDoc, policyFinder);
         } catch (UnsupportedEncodingException e) {
             // Should never happen
             throw new RuntimeException("Unsupported encoding " + e.getMessage(), e);

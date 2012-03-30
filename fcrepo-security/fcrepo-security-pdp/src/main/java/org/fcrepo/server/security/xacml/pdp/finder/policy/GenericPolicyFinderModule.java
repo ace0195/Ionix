@@ -18,16 +18,20 @@
 
 package org.fcrepo.server.security.xacml.pdp.finder.policy;
 
+import java.net.URISyntaxException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.fcrepo.server.security.xacml.pdp.MelcoePDPException;
+import org.fcrepo.server.security.xacml.pdp.data.PolicyIndex;
 import org.fcrepo.server.security.xacml.pdp.data.PolicyIndexException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.AbstractPolicy;
 import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
@@ -46,10 +50,15 @@ public class GenericPolicyFinderModule
     private static final Logger logger =
             LoggerFactory.getLogger(GenericPolicyFinderModule.class);
 
+    private PolicyIndex m_policyIndex;
+    private PolicyCombiningAlgorithm m_combiningAlg;
     private PolicyManager m_policyManager = null;
 
-    public GenericPolicyFinderModule() {
+    public GenericPolicyFinderModule(PolicyIndex policyIndex, PolicyCombiningAlgorithm combiningAlg)
+        throws PolicyIndexException, URISyntaxException {
         super();
+        m_policyIndex = policyIndex;
+        m_combiningAlg = combiningAlg;
     }
 
     /**
@@ -63,18 +72,13 @@ public class GenericPolicyFinderModule
         return true;
     }
 
-    public void setPolicyManager(PolicyManager policyManager){
-        m_policyManager = policyManager;
-    }
-
     /**
      * Initialize this module. Typically this is called by
      * <code>PolicyFinder</code> when a PDP is created.
      *
 
      */
-    public void init() throws MelcoePDPException{
-        if (m_policyManager == null) throw new MelcoePDPException("PolicyFinder requires a PolicyManager");
+    public void init() throws MelcoePDPException {
     }
 
     /**
@@ -111,7 +115,10 @@ public class GenericPolicyFinderModule
     }
 
     @Override
-    public void init(PolicyFinder arg0) {
-
+    /**
+     * This callback is invoked by the policyFinder after adding its modules
+     */
+    public void init(PolicyFinder policyFinder) {
+        m_policyManager = new PolicyManager(m_policyIndex, m_combiningAlg, policyFinder);
     }
 }

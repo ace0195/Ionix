@@ -38,6 +38,7 @@ import com.sleepycat.dbxml.XmlValue;
 import com.sun.xacml.AbstractPolicy;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.ParsingException;
+import com.sun.xacml.finder.PolicyFinder;
 
 /**
  * Encapsulates indexed access to policies stored in DbXml.
@@ -102,7 +103,7 @@ public class DbXmlPolicyIndex
      * EvaluationCtx)
      */
     @Override
-    public Map<String, AbstractPolicy> getPolicies(EvaluationCtx eval)
+    public Map<String, AbstractPolicy> getPolicies(EvaluationCtx eval, PolicyFinder policyFinder)
             throws PolicyIndexException {
         long a = 0;
         long b = 0;
@@ -174,7 +175,8 @@ public class DbXmlPolicyIndex
                 XmlValue value = results.next();
                 byte[] content = value.asDocument().getContent();
                 if (content.length > 0) {
-                    documents.put(value.asDocument().getName(), m_policyReader.readPolicy(content));
+                    documents.put(value.asDocument().getName(),
+                                  handleDocument(m_policyReader.readPolicy(content),policyFinder));
                 } else {
                     throw new PolicyIndexException("Zero-length result found");
                 }
@@ -385,13 +387,13 @@ public class DbXmlPolicyIndex
      * (java.lang.String)
      */
     @Override
-    public AbstractPolicy getPolicy(String name) throws PolicyIndexException {
+    public AbstractPolicy getPolicy(String name, PolicyFinder policyFinder) throws PolicyIndexException {
         log.debug("Getting document: " + name);
         XmlDocument doc = null;
         DbXmlManager.readLock.lock();
         try {
             doc = m_dbXmlManager.container.getDocument(name);
-            return m_policyReader.readPolicy(doc.getContent());
+            return handleDocument(m_policyReader.readPolicy(doc.getContent()), policyFinder);
         } catch (XmlException xe) {
             throw new PolicyIndexException("Error getting Policy: " + name + xe.getMessage()  + " - " + xe.getDatabaseException().getMessage(), xe);
         } catch (ParsingException pe) {

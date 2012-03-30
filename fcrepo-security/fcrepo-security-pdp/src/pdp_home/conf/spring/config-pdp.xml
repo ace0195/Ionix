@@ -10,7 +10,11 @@
         http://www.springframework.org/schema/util
         http://www.springframework.org/schema/util/spring-util-2.5.xsd">
   <util:list id="policyFinderModules">
-    <bean id="GenericPolicyFinderModule" class="org.fcrepo.server.security.xacml.pdp.finder.policy.GenericPolicyFinderModule"/>
+    <bean id="GenericPolicyFinderModule"
+          class="org.fcrepo.server.security.xacml.pdp.finder.policy.GenericPolicyFinderModule">
+          <constructor-arg ref="FilePolicyIndex" />
+          <constructor-arg ref="PolicyCombiningAlgorithm" />
+    </bean>
   </util:list>
   <util:set id="attributeFinderModules">
     <bean id="CurrentEnvModule" class="com.sun.xacml.finder.impl.CurrentEnvModule"/>

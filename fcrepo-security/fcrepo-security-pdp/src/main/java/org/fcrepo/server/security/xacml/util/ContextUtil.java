@@ -83,13 +83,10 @@ public class ContextUtil {
     private static final Map<String, String> actionValueMap =
             new ConcurrentHashMap<String, String>();
 
-    private RelationshipResolver relationshipResolver = null;
-
     private static ContextUtil instance = null;
 
     protected ContextUtil() {
         initMappings();
-
     }
 
     public static ContextUtil getInstance() {
@@ -168,91 +165,6 @@ public class ContextUtil {
         }
     }
 
-    private RelationshipResolver initRelationshipResolver() {
-        RelationshipResolver rr;
-        String className = null;
-        Map<String, String> options = null;
-
-        try {
-            // get the PEP configuration
-            File configPEPFile =
-                    new File(Constants.FEDORA_HOME,
-                             "server/config/config-melcoe-pep.xml");
-            if (!configPEPFile.exists()) {
-                throw new MelcoeXacmlException("Could not locate config file: config-melcoe-pep.xml");
-            }
-            InputStream is = new FileInputStream(configPEPFile);
-
-            DocumentBuilderFactory factory =
-                    DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder;
-            Document doc;
-            docBuilder = factory.newDocumentBuilder();
-            doc = docBuilder.parse(is);
-
-            NodeList nodes = doc.getElementsByTagName("relationship-resolver");
-            if (nodes.getLength() != 1) {
-                throw new MelcoeXacmlException("Config file needs to contain exactly 1 'relationship-resolver' section.");
-            }
-
-            Element relationshipResolverElement = (Element) nodes.item(0);
-            className = relationshipResolverElement.getAttributes().getNamedItem("class").getNodeValue();
-
-            NodeList optionList =
-                    relationshipResolverElement.getElementsByTagName("option");
-
-            if (optionList != null && optionList.getLength() > 0) {
-                options = new HashMap<String, String>();
-                for (int x = 0; x < optionList.getLength(); x++) {
-                    Node n = optionList.item(x);
-                    String key =
-                            n.getAttributes().getNamedItem("name")
-                                    .getNodeValue();
-                    String value = n.getFirstChild().getNodeValue();
-                    options.put(key, value);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Node [name]: " + key + ": " + value);
-                    }
-                }
-            }
-
-            if (options == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("creating relationship resolver WITHOUT options");
-                }
-                    rr = (RelationshipResolver) Class.forName(className).newInstance();
-
-            } else {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("creating relationship resolver WITH options");
-                }
-
-                Constructor<?> c = Class.forName(className)
-                        .getConstructor(new Class[] {Map.class});
-                rr =
-                        (RelationshipResolver) c
-                                .newInstance(new Object[] {options});
-            }
-        } catch (Exception e) {
-            logger.error("Failed to get configured RelationshipResolver " + className + ", will try "
-                    + "fallback. " + e.getMessage());
-            logger.debug(e.getMessage());
-            if (options == null) {
-                rr = new RELSRelationshipResolver();
-            } else {
-                rr = new RELSRelationshipResolver(options);
-            }
-        }
-        return rr;
-    }
-
-    public RelationshipResolver getRelationshipResolver() {
-        if (relationshipResolver == null) {
-            relationshipResolver = initRelationshipResolver();
-        }
-        return relationshipResolver;
-    }
-
     /**
      * Sets up the Subject section of the request. Takes a list of Maps of
      * URI/AttributeValue pairs. Each list element represents one subject which
@@ -296,7 +208,7 @@ public class ContextUtil {
      *
      * @return a Set of Attributes for inclusion in a Request
      */
-    public Set<Attribute> setupResources(Map<URI, AttributeValue> res)
+    public Set<Attribute> setupResources(Map<URI, AttributeValue> res, RelationshipResolver relationshipResolver)
             throws MelcoeXacmlException {
         Set<Attribute> attributes = new HashSet<Attribute>();
 
@@ -309,7 +221,7 @@ public class ContextUtil {
             AttributeValue pidAttr = res.get(XACML_RESOURCE_ID);
             if (pidAttr != null) {
                 pid = pidAttr.encode();
-                pid = getRelationshipResolver().buildRESTParentHierarchy(pid);
+                pid = relationshipResolver.buildRESTParentHierarchy(pid);
 
                 String dsid = null;
                 AttributeValue dsidAttr =
@@ -412,7 +324,8 @@ public class ContextUtil {
     public RequestCtx buildRequest(List<Map<URI, List<AttributeValue>>> subjects,
                                    Map<URI, AttributeValue> actions,
                                    Map<URI, AttributeValue> resources,
-                                   Map<URI, AttributeValue> environment)
+                                   Map<URI, AttributeValue> environment,
+                                   RelationshipResolver relationshipResolver)
             throws MelcoeXacmlException {
         if (logger.isDebugEnabled()) {
             logger.debug("Building request!");
@@ -426,7 +339,7 @@ public class ContextUtil {
         try {
             request =
                     new RequestCtx(setupSubjects(subjects),
-                                   setupResources(resources),
+                                   setupResources(resources, relationshipResolver),
                                    setupAction(actions),
                                    setupEnvironment(environment));
         } catch (Exception e) {

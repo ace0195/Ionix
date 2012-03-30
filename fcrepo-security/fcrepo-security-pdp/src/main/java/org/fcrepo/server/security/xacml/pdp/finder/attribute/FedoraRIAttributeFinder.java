@@ -30,15 +30,15 @@ public class FedoraRIAttributeFinder
     private static final Logger logger =
             LoggerFactory.getLogger(FedoraRIAttributeFinder.class);
 
-    private AttributeFactory attributeFactory = null;
+    private AttributeFactory m_attributeFactory = null;
 
-    private RelationshipResolver relationshipResolver = null;
+    private RelationshipResolver m_relationshipResolver = null;
 
     //private AttributeFinderConfig attributes = null;
 
     private final Map<Integer,Map<String,Attribute>> m_attributes = new HashMap<Integer,Map<String,Attribute>>();
 
-    public FedoraRIAttributeFinder() {
+    public FedoraRIAttributeFinder(RelationshipResolver relationshipResolver) {
         try {
             Map<String, String> resolverConfig =
                     AttributeFinderConfigUtil.getResolverConfig(this.getClass()
@@ -49,10 +49,10 @@ public class FedoraRIAttributeFinder
                 }
             }
 
-            relationshipResolver =
-                    ContextUtil.getInstance().getRelationshipResolver();
+            m_relationshipResolver =
+                    relationshipResolver;
 
-            attributeFactory = StandardAttributeFactory.getFactory();
+            m_attributeFactory = StandardAttributeFactory.getFactory();
         } catch (AttributeFinderException afe) {
             logger.error("Attribute finder not initialised:"
                     + this.getClass().getName(), afe);
@@ -256,7 +256,7 @@ public class FedoraRIAttributeFinder
 
             try {
                 logger.debug("Getting attribute using relationship " + relationship);
-                relationships = relationshipResolver.getRelationships(queryTarget, relationship);
+                relationships = m_relationshipResolver.getRelationships(queryTarget, relationship);
             } catch (MelcoeXacmlException e) {
                 throw new AttributeFinderException(e.getMessage(), e);
             }
@@ -290,7 +290,7 @@ public class FedoraRIAttributeFinder
             // run it
             try {
                 logger.debug("Using a " + queryLang + " query to get attribute " + attribute);
-                results = relationshipResolver.getAttributesFromQuery(query, queryLang, variable);
+                results = m_relationshipResolver.getAttributesFromQuery(query, queryLang, variable);
             } catch (MelcoeXacmlException e) {
                 throw new AttributeFinderException(e.getMessage(), e);
             }
@@ -301,7 +301,7 @@ public class FedoraRIAttributeFinder
         for (String s : results) {
             AttributeValue attributeValue = null;
             try {
-                attributeValue = attributeFactory.createValue(type, s);
+                attributeValue = m_attributeFactory.createValue(type, s);
             } catch (Exception e) {
                 logger.error("Error creating attribute: " + e.getMessage(), e);
                 continue;

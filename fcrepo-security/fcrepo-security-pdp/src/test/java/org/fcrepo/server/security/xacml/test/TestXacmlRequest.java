@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Scanner;
 
 import org.fcrepo.server.security.xacml.util.ContextUtil;
+import org.fcrepo.server.security.xacml.util.RIRelationshipResolver;
+import org.fcrepo.server.security.xacml.util.RelationshipResolver;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +51,13 @@ public class TestXacmlRequest {
     private static ContextHandler contextHandler = null;
 
     private static ContextUtil contextUtil = null;
+    
+    private static RelationshipResolver RELATIONSHIP_RESOLVER = null;
+    static {
+        try{
+            RELATIONSHIP_RESOLVER = new RIRelationshipResolver();
+        } catch (Exception e) {}
+    }
 
     public static void main(String[] args) throws Exception {
         contextHandler = new ContextHandler();
@@ -190,7 +200,8 @@ public class TestXacmlRequest {
                     contextUtil.buildRequest(getSubjects(user),
                                              actionAttr,
                                              resAttr,
-                                             getEnvironment());
+                                             getEnvironment(),
+                                             RELATIONSHIP_RESOLVER);
         } catch (Exception e) {
             System.out.print(e.getMessage());
         }

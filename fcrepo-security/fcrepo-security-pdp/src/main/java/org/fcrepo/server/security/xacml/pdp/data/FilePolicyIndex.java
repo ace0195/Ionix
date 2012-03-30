@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.sun.xacml.AbstractPolicy;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.ParsingException;
+import com.sun.xacml.finder.PolicyFinder;
 
 /**
  * Implements PolicyIndex for a filesystem policy index, cached in memory
@@ -96,7 +97,7 @@ implements PolicyIndex {
      * EvaluationCtx)
      */
     @Override
-    public Map<String, AbstractPolicy> getPolicies(EvaluationCtx eval)
+    public Map<String, AbstractPolicy> getPolicies(EvaluationCtx eval, PolicyFinder policyFinder)
     throws PolicyIndexException {
         // no indexing, return everything
         // return a copy, otherwise the map could change during evaluation if policies are added, deleted etc
@@ -104,7 +105,8 @@ implements PolicyIndex {
         try {
             Map<String, AbstractPolicy> result = new ConcurrentHashMap<String, AbstractPolicy>();
             for(String id:policies.keySet()){
-                result.put(id, m_policyReader.readPolicy(policies.get(id)));
+                AbstractPolicy policy = handleDocument(m_policyReader.readPolicy(policies.get(id)),policyFinder);
+                result.put(id, policy);
             }
             return result;
         }
@@ -261,12 +263,12 @@ implements PolicyIndex {
      * @see org.fcrepo.server.security.xacml.pdp.data.PolicyDataManager#getPolicy(java.lang.String)
      */
     @Override
-    public AbstractPolicy getPolicy(String name) throws PolicyIndexException {
+    public AbstractPolicy getPolicy(String name, PolicyFinder policyFinder) throws PolicyIndexException {
         readLock.lock();
         try {
             logger.debug("Getting policy named: " + name);
             if (policies.containsKey(name)) {
-                return m_policyReader.readPolicy(policies.get(name));
+                return handleDocument(m_policyReader.readPolicy(policies.get(name)), policyFinder);
             } else {
                 throw new PolicyIndexException("Attempting to get non-existent policy " + name);
             }

@@ -15,11 +15,19 @@ import org.fcrepo.server.security.xacml.util.AttributeBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.xacml.AbstractPolicy;
 import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.Policy;
+import com.sun.xacml.PolicySet;
 import com.sun.xacml.attr.AttributeDesignator;
 import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.EvaluationResult;
+import com.sun.xacml.finder.PolicyFinder;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 
 /**
@@ -41,7 +49,7 @@ implements PolicyIndex {
     public  boolean indexed = true;
 
     protected Map<String, Map<String, String>> indexMap = null;
-    protected final PolicyReader m_policyReader;
+    protected PolicyReader m_policyReader;
 
     private static final Logger log =
         LoggerFactory.getLogger(PolicyIndexBase.class.getName());
@@ -70,7 +78,7 @@ implements PolicyIndex {
             indexMap.put(s, new HashMap<String, String>());
         }
     }
-
+    
     public void setSubjectAttributeMap(Map<String, String> attributeMap) {
         setAttributeMap(SUBJECT_KEY, attributeMap);
     }
@@ -189,7 +197,7 @@ implements PolicyIndex {
                 }
             }
         }
-        attributeMap.put("resourceAttributes", new HashSet(attributeBeans
+        attributeMap.put("resourceAttributes", new HashSet<AttributeBean>(attributeBeans
                 .values()));
 
         im = indexMap.get("actionAttributes");
@@ -223,7 +231,7 @@ implements PolicyIndex {
                 }
             }
         }
-        attributeMap.put("actionAttributes", new HashSet(attributeBeans
+        attributeMap.put("actionAttributes", new HashSet<AttributeBean>(attributeBeans
                 .values()));
 
         im = indexMap.get("environmentAttributes");
@@ -257,10 +265,33 @@ implements PolicyIndex {
                 }
             }
         }
-        attributeMap.put("environmentAttributes", new HashSet(attributeBeans
+        attributeMap.put("environmentAttributes", new HashSet<AttributeBean>(attributeBeans
                 .values()));
 
         return attributeMap;
+    }
+    
+    /**
+     * A private method that handles reading the policy and creates the correct
+     * kind of AbstractPolicy.
+     * Because this makes use of the policyFinder, it cannot be reused between finders.
+     * Consider moving to policyManager, which is not intended to be reused outside
+     * of a policyFinderModule, which is not intended to be reused amongst PolicyFinder instances.
+     */
+    protected AbstractPolicy handleDocument(Document doc, PolicyFinder policyFinder) throws ParsingException {
+        // handle the policy, if it's a known type
+        Element root = doc.getDocumentElement();
+        String name = root.getTagName();
+
+        // see what type of policy this is
+        if (name.equals("Policy")) {
+            return Policy.getInstance(root);
+        } else if (name.equals("PolicySet")) {
+            return PolicySet.getInstance(root, policyFinder);
+        } else {
+            // this isn't a root type that we know how to handle
+            throw new ParsingException("Unknown root document type: " + name);
+        }
     }
 
     /**

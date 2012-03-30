@@ -10,6 +10,7 @@
         http://www.springframework.org/schema/util
         http://www.springframework.org/schema/util/spring-util-2.5.xsd">
 	<bean id="FedoraRIAttributeFinder" name="org.fcrepo.server.security.xacml.pdp.finder.attribute.FedoraRIAttributeFinder">
+	  <constructor-arg ref="RelationshipResolver" />
 	<!--  the resolver tag appears to be a dead configuration -->
 	<!-- <resolver url="http://localhost:5743/fedora/melcoerisearch" username="" password="" /> -->
 

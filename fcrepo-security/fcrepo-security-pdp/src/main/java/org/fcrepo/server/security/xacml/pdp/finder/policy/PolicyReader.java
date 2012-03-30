@@ -98,9 +98,6 @@ public class PolicyReader
     private static final String JAXP_SCHEMA_SOURCE =
             "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
-    // the finder, which is used by PolicySets
-    private final PolicyFinder finder;
-
     // the builder used to create DOM documents
     private DocumentBuilder builder;
 
@@ -112,8 +109,8 @@ public class PolicyReader
      *        a <code>PolicyFinder</code> that is used by policy sets, which may
      *        be null only if no references are used
      */
-    public PolicyReader(PolicyFinder finder) {
-        this(finder, null);
+    public PolicyReader() {
+        this(null);
     }
 
     /**
@@ -126,9 +123,7 @@ public class PolicyReader
      *        the schema file used to validate policies, or null if schema
      *        validation is not desired
      */
-    public PolicyReader(PolicyFinder finder, File schemaFile) {
-        this.finder = finder;
-
+    public PolicyReader(File schemaFile) {
         // create the factory
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setIgnoringComments(true);
@@ -163,10 +158,10 @@ public class PolicyReader
      * @throws ParsingException
      *         if an error occurs while reading or parsing the policy
      */
-    public synchronized AbstractPolicy readPolicy(File file)
+    public synchronized Document readPolicy(File file)
             throws ParsingException {
         try {
-            return handleDocument(builder.parse(file));
+            return builder.parse(file);
         } catch (IOException ioe) {
             throw new ParsingException("Failed to read the file", ioe);
         } catch (SAXException saxe) {
@@ -184,10 +179,10 @@ public class PolicyReader
      * @throws ParsingException
      *         if an error occurs while reading or parsing the policy
      */
-    public synchronized AbstractPolicy readPolicy(InputStream input)
+    public synchronized Document readPolicy(InputStream input)
             throws ParsingException {
         try {
-            return handleDocument(builder.parse(input));
+            return builder.parse(input);
         } catch (IOException ioe) {
             throw new ParsingException("Failed to read the stream", ioe);
         } catch (SAXException saxe) {
@@ -195,7 +190,7 @@ public class PolicyReader
         }
     }
 
-    public synchronized AbstractPolicy readPolicy(byte[] input)
+    public synchronized Document readPolicy(byte[] input)
             throws ParsingException {
         return readPolicy(new ByteArrayInputStream(input));
     }
@@ -212,33 +207,13 @@ public class PolicyReader
      *         if an error occurs while reading or parsing the policy, or if the
      *         URL can't be resolved
      */
-    public synchronized AbstractPolicy readPolicy(URL url)
+    public synchronized Document readPolicy(URL url)
             throws ParsingException {
         try {
             return readPolicy(url.openStream());
         } catch (IOException ioe) {
             throw new ParsingException("Failed to resolve the URL: "
                     + url.toString(), ioe);
-        }
-    }
-
-    /**
-     * A private method that handles reading the policy and creates the correct
-     * kind of AbstractPolicy.
-     */
-    private AbstractPolicy handleDocument(Document doc) throws ParsingException {
-        // handle the policy, if it's a known type
-        Element root = doc.getDocumentElement();
-        String name = root.getTagName();
-
-        // see what type of policy this is
-        if (name.equals("Policy")) {
-            return Policy.getInstance(root);
-        } else if (name.equals("PolicySet")) {
-            return PolicySet.getInstance(root, finder);
-        } else {
-            // this isn't a root type that we know how to handle
-            throw new ParsingException("Unknown root document type: " + name);
         }
     }
 

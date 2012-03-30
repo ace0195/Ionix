@@ -47,18 +47,10 @@
   </bean>
   -->
   <!--  PolicyStore Configuration -->
-  <bean id="PolicyStore" class="org.fcrepo.server.security.xacml.pdp.data.FedoraPolicyStore" factory-method="newInstance" />
   <bean id="PolicyCombiningAlgorithm" class="org.fcrepo.server.security.xacml.pdp.HierarchicalLowestChildDenyOverridesPolicyAlg" />
   <!-- Melcoe PDP -->
-  <bean id="PolicyManager" class="org.fcrepo.server.security.xacml.pdp.finder.policy.PolicyManager">
-    <constructor-arg>
-      <bean factory-bean="MelcoePDPConfig" factory-method="getPolicyFinder" class="com.sun.xacml.finder.PolicyFinder"/>
-    </constructor-arg>
-    <constructor-arg ref="FilePolicyIndex" />
-    <constructor-arg ref="PolicyCombiningAlgorithm" />
-  </bean>
   <bean id="PDP" class="org.fcrepo.server.security.xacml.pdp.MelcoePDPImpl">
-    <constructor-arg ref="PolicyStore" />
+    <constructor-arg ref="FedoraPolicyStore" />
     <constructor-arg ref="MelcoePDPConfig" />
   </bean>
   <!--  Attribute Map Configurations -->
