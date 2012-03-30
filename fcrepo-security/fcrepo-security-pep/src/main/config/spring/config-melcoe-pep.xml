@@ -167,68 +167,68 @@
 		a handler class. The handler class is responsible for generating XACML requests or performing other
 		tasks such as filtering for searches.
 	-->
-	<handlers-ws service="access">
-		<entry key="describeRepository" class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeRepositoryHandler" />
-		<entry key="getObjectProfile" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectProfileHandler" />
-		<entry key="listDatastreams" class="org.fcrepo.server.security.xacml.pep.ws.operations.ListDatastreamsHandler" />
-		<entry key="listMethods" class="org.fcrepo.server.security.xacml.pep.ws.operations.ListMethodsHandler" />
-		<entry key="getDatastreamDissemination" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamDisseminationHandler" />
-		<entry key="getDissemination" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDisseminationHandler" />
-		<entry key="findObjects" class="org.fcrepo.server.security.xacml.pep.ws.operations.FindObjectsHandler" />
-		<entry key="resumeFindObjects" class="org.fcrepo.server.security.xacml.pep.ws.operations.ResumeFindObjectsHandler" />
-		<entry key="getObjectHistory" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectHistoryHandler" />
-	</handlers-ws>
-	<handlers-ws service="accessS">
-		<entry key="describeRepository" class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeRepositoryHandler" />
-		<entry key="getObjectProfile" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectProfileHandler" />
-		<entry key="listDatastreams" class="org.fcrepo.server.security.xacml.pep.ws.operations.ListDatastreamsHandler" />
-		<entry key="listMethods" class="org.fcrepo.server.security.xacml.pep.ws.operations.ListMethodsHandler" />
-		<entry key="getDatastreamDissemination" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamDisseminationHandler" />
-		<entry key="getDissemination" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDisseminationHandler" />
-		<entry key="findObjects" class="org.fcrepo.server.security.xacml.pep.ws.operations.FindObjectsHandler" />
-		<entry key="resumeFindObjects" class="org.fcrepo.server.security.xacml.pep.ws.operations.ResumeFindObjectsHandler" />
-		<entry key="getObjectHistory" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectHistoryHandler" />
-	</handlers-ws>
-	<handlers-ws service="management">
-		<entry key="addDatastream" class="org.fcrepo.server.security.xacml.pep.ws.operations.AddDatastreamHandler" />
-		<entry key="describeUser" class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeUserHandler" />
-		<entry key="export" class="org.fcrepo.server.security.xacml.pep.ws.operations.ExportHandler" />
-		<entry key="getDatastream" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHandler" />
-		<entry key="getDatastreamHistory" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHistoryHandler" />
-		<entry key="getDatastreams" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamsHandler" />
-		<entry key="getNextPID" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetNextPIDHandler" />
-		<entry key="getObjectXML" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectXMLHandler" />
-		<entry key="ingest" class="org.fcrepo.server.security.xacml.pep.ws.operations.IngestHandler" />
-		<entry key="modifyDatastreamByReference" class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyDatastreamByReferenceHandler" />
-		<entry key="modifyDatastreamByValue" class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyDatastreamByValueHandler" />
-		<entry key="modifyObject" class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyObjectHandler" />
-		<entry key="purgeDatastream" class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeDatastreamHandler" />
-		<entry key="purgeObject" class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeObjectHandler" />
-		<entry key="setDatastreamState" class="org.fcrepo.server.security.xacml.pep.ws.operations.SetDatastreamStateHandler" />
-		<entry key="setDatastreamVersionable" class="org.fcrepo.server.security.xacml.pep.ws.operations.SetDatastreamVersionableHandler" />
-		<entry key="addRelationship" class="org.fcrepo.server.security.xacml.pep.ws.operations.AddRelationshipHandler" />
-		<entry key="getRelationships" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetRelationshipsHandler" />
-		<entry key="purgeRelationship" class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeRelationshipHandler" />
-	</handlers-ws>
-	<handlers-ws service="managementS">
-		<entry key="addDatastream" class="org.fcrepo.server.security.xacml.pep.ws.operations.AddDatastreamHandler" />
-		<entry key="describeUser" class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeUserHandler" />
-		<entry key="export" class="org.fcrepo.server.security.xacml.pep.ws.operations.ExportHandler" />
-		<entry key="getDatastream" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHandler" />
-		<entry key="getDatastreamHistory" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHistoryHandler" />
-		<entry key="getDatastreams" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamsHandler" />
-		<entry key="getNextPID" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetNextPIDHandler" />
-		<entry key="getObjectXML" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectXMLHandler" />
-		<entry key="ingest" class="org.fcrepo.server.security.xacml.pep.ws.operations.IngestHandler" />
-		<entry key="modifyDatastreamByReference" class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyDatastreamByReferenceHandler" />
-		<entry key="modifyDatastreamByValue" class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyDatastreamByValueHandler" />
-		<entry key="modifyObject" class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyObjectHandler" />
-		<entry key="purgeDatastream" class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeDatastreamHandler" />
-		<entry key="purgeObject" class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeObjectHandler" />
-		<entry key="setDatastreamState" class="org.fcrepo.server.security.xacml.pep.ws.operations.SetDatastreamStateHandler" />
-		<entry key="setDatastreamVersionable" class="org.fcrepo.server.security.xacml.pep.ws.operations.SetDatastreamVersionableHandler" />
-		<entry key="addRelationship" class="org.fcrepo.server.security.xacml.pep.ws.operations.AddRelationshipHandler" />
-		<entry key="getRelationships" class="org.fcrepo.server.security.xacml.pep.ws.operations.GetRelationshipsHandler" />
-		<entry key="purgeRelationship" class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeRelationshipHandler" />
-	</handlers-ws>
+	<util:map id="handlers-ws-access">
+		<entry key="describeRepository"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeRepositoryHandler" /></entry>
+		<entry key="getObjectProfile"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectProfileHandler" /></entry>
+		<entry key="listDatastreams"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ListDatastreamsHandler" /></entry>
+		<entry key="listMethods"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ListMethodsHandler" /></entry>
+		<entry key="getDatastreamDissemination"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamDisseminationHandler" /></entry>
+		<entry key="getDissemination"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDisseminationHandler" /></entry>
+		<entry key="findObjects"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.FindObjectsHandler" /></entry>
+		<entry key="resumeFindObjects"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ResumeFindObjectsHandler" /></entry>
+		<entry key="getObjectHistory"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectHistoryHandler" /></entry>
+	</util:map>
+	<util:map id="handlers-ws-accessS">
+		<entry key="describeRepository"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeRepositoryHandler" /></entry>
+		<entry key="getObjectProfile"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectProfileHandler" /></entry>
+		<entry key="listDatastreams"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ListDatastreamsHandler" /></entry>
+		<entry key="listMethods"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ListMethodsHandler" /></entry>
+		<entry key="getDatastreamDissemination"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamDisseminationHandler" /></entry>
+		<entry key="getDissemination"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDisseminationHandler" /></entry>
+		<entry key="findObjects"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.FindObjectsHandler" /></entry>
+		<entry key="resumeFindObjects"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ResumeFindObjectsHandler" /></entry>
+		<entry key="getObjectHistory"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectHistoryHandler" /></entry>
+	</util:map>
+	<util:map id="handlers-ws-management">
+		<entry key="addDatastream"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.AddDatastreamHandler" /></entry>
+		<entry key="describeUser"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeUserHandler" /></entry>
+		<entry key="export"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ExportHandler" /></entry>
+		<entry key="getDatastream"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHandler" /></entry>
+		<entry key="getDatastreamHistory"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHistoryHandler" /></entry>
+		<entry key="getDatastreams"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamsHandler" /></entry>
+		<entry key="getNextPID"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetNextPIDHandler" /></entry>
+		<entry key="getObjectXML"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectXMLHandler" /></entry>
+		<entry key="ingest"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.IngestHandler" /></entry>
+		<entry key="modifyDatastreamByReference"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyDatastreamByReferenceHandler" /></entry>
+		<entry key="modifyDatastreamByValue"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyDatastreamByValueHandler" /></entry>
+		<entry key="modifyObject"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyObjectHandler" /></entry>
+		<entry key="purgeDatastream"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeDatastreamHandler" /></entry>
+		<entry key="purgeObject"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeObjectHandler" /></entry>
+		<entry key="setDatastreamState"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.SetDatastreamStateHandler" /></entry>
+		<entry key="setDatastreamVersionable"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.SetDatastreamVersionableHandler" /></entry>
+		<entry key="addRelationship"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.AddRelationshipHandler" /></entry>
+		<entry key="getRelationships"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetRelationshipsHandler" /></entry>
+		<entry key="purgeRelationship"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeRelationshipHandler" /></entry>
+	</util:map>
+	<util:map id="handlers-ws-managementS">
+		<entry key="addDatastream"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.AddDatastreamHandler" /></entry>
+		<entry key="describeUser"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeUserHandler" /></entry>
+		<entry key="export"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ExportHandler" /></entry>
+		<entry key="getDatastream"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHandler" /></entry>
+		<entry key="getDatastreamHistory"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHistoryHandler" /></entry>
+		<entry key="getDatastreams"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamsHandler" /></entry>
+		<entry key="getNextPID"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetNextPIDHandler" /></entry>
+		<entry key="getObjectXML"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectXMLHandler" /></entry>
+		<entry key="ingest"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.IngestHandler" /></entry>
+		<entry key="modifyDatastreamByReference"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyDatastreamByReferenceHandler" /></entry>
+		<entry key="modifyDatastreamByValue"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyDatastreamByValueHandler" /></entry>
+		<entry key="modifyObject"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ModifyObjectHandler" /></entry>
+		<entry key="purgeDatastream"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeDatastreamHandler" /></entry>
+		<entry key="purgeObject"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeObjectHandler" /></entry>
+		<entry key="setDatastreamState"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.SetDatastreamStateHandler" /></entry>
+		<entry key="setDatastreamVersionable"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.SetDatastreamVersionableHandler" /></entry>
+		<entry key="addRelationship"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.AddRelationshipHandler" /></entry>
+		<entry key="getRelationships"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetRelationshipsHandler" /></entry>
+		<entry key="purgeRelationship"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeRelationshipHandler" /></entry>
+	</util:map>
 </beans>
