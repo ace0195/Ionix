@@ -8,15 +8,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import javax.annotation.Resource;
-
-import org.trippi.TriplestoreConnector;
-import org.trippi.impl.mulgara.MulgaraConnector;
 
 import org.fcrepo.server.Module;
 import org.fcrepo.server.config.ModuleConfiguration;
@@ -31,6 +27,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.GenericApplicationContext;
+import org.trippi.TriplestoreConnector;
+import org.trippi.impl.mulgara.MulgaraConnector;
 
 
 
@@ -47,7 +46,7 @@ public class ResourceIndexRebuilder
 
     private ModuleConfiguration m_riConfig;
 
-    private ApplicationContext m_context;
+    private GenericApplicationContext m_context;
 
     private ResourceIndex m_ri;
 
@@ -72,6 +71,7 @@ public class ResourceIndexRebuilder
     /**
      * Get a short phrase describing what the user can do with this rebuilder.
      */
+    @Override
     public String getAction() {
         return "Rebuild the Resource Index.";
     }
@@ -80,6 +80,7 @@ public class ResourceIndexRebuilder
      * Returns true is the server _must_ be shut down for this rebuilder to
      * safely operate.
      */
+    @Override
     public boolean shouldStopServer() {
         return true;
     }
@@ -89,18 +90,22 @@ public class ResourceIndexRebuilder
      *
      * @returns a map of option names to plaintext descriptions.
      */
+    @Override
     public void setServerConfiguration(ServerConfiguration serverConfig){
         // not needed
     }
 
+    @Override
     public void setServerDir(File serverBaseDir) {
         // not needed
     }
 
+    @Override
     public void init() {
 
     }
 
+    @Override
     public Map<String, String> getOptions() {
         Map<String, String> m = new HashMap<String, String>();
         return m;
@@ -114,6 +119,7 @@ public class ResourceIndexRebuilder
     /**
      * Validate the provided options and perform any necessary startup tasks.
      */
+    @Override
     public void start(Map<String, String> options)
     throws ResourceIndexException {
         // validate options
@@ -122,7 +128,7 @@ public class ResourceIndexRebuilder
 
         String levelValue;
         if (m_riConfig == null){ //must have been configured outside fcfg
-            Module riModule = m_context.getBean(moduleName,Module.class);
+            Module riModule = (Module) m_context.getBean(moduleName,Module.class);
             if (riModule != null){
                 logger.warn("ModuleConfiguration bean unavailable; getting Module bean");
                 levelValue = riModule.getParameter("level");
@@ -200,6 +206,7 @@ public class ResourceIndexRebuilder
      *
      * @throws ResourceIndexException
      */
+    @Override
     public void addObject(DigitalObject obj) throws ResourceIndexException {
         m_ri.addObject(new SimpleDOReader(null, null, null, null, null, obj));
     }
@@ -207,6 +214,7 @@ public class ResourceIndexRebuilder
     /**
      * Free up any system resources associated with rebuilding.
      */
+    @Override
     public void finish() throws Exception {
         if (m_ri != null) {
             m_ri.flushBuffer();
@@ -244,7 +252,7 @@ public class ResourceIndexRebuilder
     @Override
     public void setApplicationContext(ApplicationContext context)
             throws BeansException {
-        m_context = context;
+        m_context = (GenericApplicationContext)context;
 
     }
 

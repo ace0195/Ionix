@@ -7,8 +7,7 @@ package org.fcrepo.server;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
-import org.w3c.dom.Element;
+import java.util.Map;
 
 import org.fcrepo.common.Constants;
 import org.fcrepo.common.Models;
@@ -22,6 +21,7 @@ import org.fcrepo.server.utilities.status.ServerState;
 import org.fcrepo.server.utilities.status.ServerStatusFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
 
 
 
@@ -36,9 +36,19 @@ public class BasicServer
     private static final Logger logger =
             LoggerFactory.getLogger(BasicServer.class);
 
-    public BasicServer(Element rootElement, File fedoraHomeDir)
+    public BasicServer(File homeDir)
             throws ServerInitializationException, ModuleInitializationException {
-        super(rootElement, fedoraHomeDir);
+        super(homeDir);
+    }
+
+    public BasicServer(Element rootElement, File homeDir)
+            throws ServerInitializationException, ModuleInitializationException {
+        super(rootElement, homeDir);
+    }
+
+    public BasicServer(Map<String,String> serverParams, File homeDir)
+            throws ServerInitializationException, ModuleInitializationException {
+        super(serverParams, homeDir);
     }
 
     @Override

@@ -4,16 +4,10 @@
  */
 package org.fcrepo.server.access;
 
-import java.io.File;
-
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.trippi.TriplestoreReader;
-import org.trippi.TriplestoreWriter;
-import org.trippi.server.TrippiServer;
-import org.trippi.server.http.TrippiServlet;
 
 import org.fcrepo.common.Constants;
 import org.fcrepo.server.Context;
@@ -26,6 +20,12 @@ import org.fcrepo.server.resourceIndex.ResourceIndex;
 import org.fcrepo.server.security.Authorization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.trippi.TriplestoreReader;
+import org.trippi.TriplestoreWriter;
+import org.trippi.server.TrippiServer;
+import org.trippi.server.http.TrippiServlet;
 
 
 
@@ -46,6 +46,21 @@ public class RISearchServlet
 
     private Authorization m_authorization;
 
+    private ResourceIndex m_writer;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        ApplicationContext appContext = WebApplicationContextUtils.getRequiredWebApplicationContext(config.getServletContext());
+        Server server = (Server)appContext.getBean("org.fcrepo.server.Server");
+        if (server == null) throw new ServletException("Could not retrieve org.fcrepo.server.Server bean");
+       m_writer =
+                (ResourceIndex) server
+                        .getModule("org.fcrepo.server.resourceIndex.ResourceIndex");
+       m_authorization =
+                    (Authorization) server
+                            .getModule("org.fcrepo.server.security.Authorization");
+    }
+
     @Override
     public TriplestoreReader getReader() throws ServletException {
         return getWriter();
@@ -53,27 +68,12 @@ public class RISearchServlet
 
     @Override
     public TriplestoreWriter getWriter() throws ServletException {
-        ResourceIndex writer = null;
-        try {
-            Server server =
-                    Server.getInstance(new File(Constants.FEDORA_HOME), false);
-            writer =
-                    (ResourceIndex) server
-                            .getModule("org.fcrepo.server.resourceIndex.ResourceIndex");
-            if (m_authorization == null) {
-                m_authorization =
-                        (Authorization) server
-                                .getModule("org.fcrepo.server.security.Authorization");
-            }
-        } catch (Exception e) {
-            throw new ServletException("Error initting RISearchServlet.", e);
-        }
-        if (writer == null
-                || writer.getIndexLevel() == ResourceIndex.INDEX_LEVEL_OFF) {
+        if (m_writer == null
+                || m_writer.getIndexLevel() == ResourceIndex.INDEX_LEVEL_OFF) {
             throw new ServletException("The Resource Index Module is not "
                     + "enabled.");
         } else {
-            return writer;
+            return m_writer;
         }
     }
 

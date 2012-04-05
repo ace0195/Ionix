@@ -11,23 +11,18 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.fcrepo.common.Constants;
-
 import org.fcrepo.server.Context;
 import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.Server;
-import org.fcrepo.server.errors.InitializationException;
+import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.StreamIOException;
-import org.fcrepo.server.errors.ValidationException;
 import org.fcrepo.server.storage.ContentManagerParams;
 import org.fcrepo.server.storage.ExternalContentManager;
 import org.fcrepo.server.storage.lowlevel.ILowlevelStorage;
 import org.fcrepo.server.utilities.StreamUtility;
 import org.fcrepo.server.validation.ValidationUtility;
-import org.fcrepo.server.validation.ecm.jaxb.DsTypeModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -51,36 +46,32 @@ public class DatastreamManagedContent
 
     public static final String UPLOADED_SCHEME = "uploaded://";
 
-    private static ILowlevelStorage s_llstore;
+    private ILowlevelStorage s_llstore;
 
-    private static Server m_server;
+    private ExternalContentManager s_ecm;
 
-    private static ExternalContentManager s_ecm;
-
-    private static File m_tempUploadDir;
+    private File m_tempUploadDir;
 
     public int DSMDClass = 0;
 
-    public DatastreamManagedContent() {
+    public DatastreamManagedContent(Server server) {
+        super(server);
+    }
+
+    public DatastreamManagedContent() throws ServerException {
+        this(Datastream.getStaticServer());
     }
 
     @Override
     public Datastream copy() {
-        DatastreamManagedContent ds = new DatastreamManagedContent();
+        DatastreamManagedContent ds = new DatastreamManagedContent(m_server);
         copy(ds);
         return ds;
     }
 
     private ILowlevelStorage getLLStore() throws Exception {
         if (s_llstore == null) {
-            try {
-                s_llstore =
-                        (ILowlevelStorage) getServer()
-                                .getModule("org.fcrepo.server.storage.lowlevel.ILowlevelStorage");
-            } catch (InitializationException ie) {
-                throw new Exception("Unable to get LLStore Module: "
-                        + ie.getMessage(), ie);
-            }
+            s_llstore = (ILowlevelStorage) m_server.getModule(ILowlevelStorage.class.getName());
         }
         return s_llstore;
     }
@@ -91,36 +82,14 @@ public class DatastreamManagedContent
      */
     private File getTempUploadDir() throws Exception {
         if (m_tempUploadDir == null) {
-            try {
-                m_tempUploadDir = getServer().getUploadDir();
-            } catch (InitializationException e) {
-                throw new Exception("Unable to get server: " + e.getMessage(), e);
-            }
+            m_tempUploadDir = m_server.getUploadDir();
         }
         return m_tempUploadDir;
     }
 
-    private Server getServer() throws Exception {
-        if (m_server == null) {
-            try {
-                m_server = Server.getInstance(new File(Constants.FEDORA_HOME),
-                                              false);
-            } catch (InitializationException e) {
-                throw new Exception("Unable to get Server: " + e.getMessage(), e);
-            }
-        }
-        return m_server;
-    }
-
     private ExternalContentManager getExternalContentManager() throws Exception {
         if (s_ecm == null) {
-            try {
-                s_ecm = (ExternalContentManager) getServer()
-                        .getModule("org.fcrepo.server.storage.ExternalContentManager");
-            } catch (InitializationException e) {
-                throw new Exception("Unable to get ExternalContentManager Module: "
-                                    + e.getMessage(), e);
-            }
+            s_ecm = (ExternalContentManager) m_server.getModule(ExternalContentManager.class.getName());
         }
         return s_ecm;
     }
@@ -128,6 +97,7 @@ public class DatastreamManagedContent
     // Note: might seem strange to pass through the Context, but DatastreamManagedContent looks after
     // datastreams before they have been ingested, ie while location is still external (file, URL), so without
     // Context authz will fail
+    @Override
     public InputStream getContentStream(Context ctx) throws StreamIOException {
         try {
             // For new or modified datastreams, the new bytestream hasn't yet been

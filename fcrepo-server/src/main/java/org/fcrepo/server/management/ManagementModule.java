@@ -6,7 +6,6 @@ package org.fcrepo.server.management;
 
 import java.io.File;
 import java.io.InputStream;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -14,9 +13,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.fcrepo.server.Context;
 import org.fcrepo.server.Module;
@@ -32,6 +28,8 @@ import org.fcrepo.server.storage.ExternalContentManager;
 import org.fcrepo.server.storage.types.Datastream;
 import org.fcrepo.server.storage.types.RelationshipTuple;
 import org.fcrepo.server.storage.types.Validation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Edwin Shin
@@ -182,7 +180,8 @@ public class ManagementModule
         }
 
         Management m =
-                new DefaultManagement(m_fedoraXACMLModule,
+                new DefaultManagement(getServer(),
+                                      m_fedoraXACMLModule,
                                       m_manager,
                                       m_contentManager,
                                       m_uploadStorageMinutes,
@@ -210,6 +209,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public String addDatastream(Context context,
                                 String pid,
                                 String dsID,
@@ -243,6 +243,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean addRelationship(Context context,
                                    String pid,
                                    String relationship,
@@ -260,6 +261,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public String compareDatastreamChecksum(Context context,
                                             String pid,
                                             String dsID,
@@ -271,6 +273,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public InputStream export(Context context,
                               String pid,
                               String format,
@@ -282,6 +285,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public Datastream getDatastream(Context context,
                                     String pid,
                                     String datastreamID,
@@ -292,6 +296,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public Datastream[] getDatastreamHistory(Context context,
                                              String pid,
                                              String datastreamID)
@@ -302,6 +307,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public Datastream[] getDatastreams(Context context,
                                        String pid,
                                        Date asOfDateTime,
@@ -312,6 +318,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public String[] getNextPID(Context context, int numPIDs, String namespace)
             throws ServerException {
         return mgmt.getNextPID(context, numPIDs, namespace);
@@ -320,6 +327,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public InputStream getObjectXML(Context context, String pid, String encoding)
             throws ServerException {
         return mgmt.getObjectXML(context, pid, encoding);
@@ -328,6 +336,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public RelationshipTuple[] getRelationships(Context context,
                                                 String pid,
                                                 String relationship)
@@ -338,6 +347,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public InputStream getTempStream(String id) throws ServerException {
         return mgmt.getTempStream(id);
     }
@@ -345,6 +355,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public String ingest(Context context,
                          InputStream serialization,
                          String logMessage,
@@ -362,6 +373,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public Date modifyDatastreamByReference(Context context,
                                             String pid,
                                             String datastreamID,
@@ -392,6 +404,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public Date modifyDatastreamByValue(Context context,
                                         String pid,
                                         String datastreamID,
@@ -421,6 +434,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public Date modifyObject(Context context,
                              String pid,
                              String state,
@@ -441,6 +455,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public Date[] purgeDatastream(Context context,
                                   String pid,
                                   String datastreamID,
@@ -458,6 +473,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public Date purgeObject(Context context,
                             String pid,
                             String logMessage) throws ServerException {
@@ -467,6 +483,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean purgeRelationship(Context context,
                                      String pid,
                                      String relationship,
@@ -484,6 +501,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public Validation validate(Context context, String pid,
                                Date asOfDateTime) throws ServerException {
         return mgmt.validate(context, pid, asOfDateTime);
@@ -492,6 +510,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public String putTempStream(Context context, InputStream in)
             throws ServerException {
         return mgmt.putTempStream(context, in);
@@ -500,6 +519,7 @@ public class ManagementModule
     /**
      * {@inheritDoc}
      */
+    @Override
     public Date setDatastreamState(Context context,
                                    String pid,
                                    String dsID,
@@ -511,6 +531,7 @@ public class ManagementModule
     /**
      * {@inheritDoce}
      */
+    @Override
     public Date setDatastreamVersionable(Context context,
                                          String pid,
                                          String dsID,

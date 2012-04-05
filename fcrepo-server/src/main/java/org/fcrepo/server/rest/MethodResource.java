@@ -22,6 +22,8 @@ import org.fcrepo.server.Context;
 import org.fcrepo.server.storage.types.ObjectMethodsDef;
 import org.fcrepo.server.storage.types.Property;
 import org.fcrepo.utilities.DateUtility;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -32,6 +34,8 @@ import org.fcrepo.utilities.DateUtility;
  * @version $Id$
  */
 @Path("/{pid}/methods")
+@Component
+@Scope("request")
 public class MethodResource extends BaseRestResource {
     @javax.ws.rs.core.Context UriInfo uriInfo;
 
@@ -92,7 +96,7 @@ public class MethodResource extends BaseRestResource {
             String dTime) {
         try {
             Date asOfDateTime = DateUtility.parseDateOrNull(dTime);
-            return buildResponse(apiAService.getDissemination(
+            return buildResponse(m_APIAService.getDissemination(
                     getContext(),
                     pid,
                     sDef,
@@ -109,7 +113,7 @@ public class MethodResource extends BaseRestResource {
         try {
             Date asOfDateTime = DateUtility.parseDateOrNull(dTime);
             Context context = getContext();
-            ObjectMethodsDef[] methodDefs = apiAService.listMethods(context, pid, asOfDateTime);
+            ObjectMethodsDef[] methodDefs = m_APIAService.listMethods(context, pid, asOfDateTime);
             String xml = getSerializer(context).objectMethodsToXml(methodDefs, pid, sDef, asOfDateTime);
 
             MediaType mime = RestHelper.getContentType(format);

@@ -5,29 +5,22 @@
 package org.fcrepo.server.access.dissemination;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-
 import java.net.URLEncoder;
-
 import java.sql.Timestamp;
-
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.fcrepo.common.Constants;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.DisseminationBindingInfoNotFoundException;
 import org.fcrepo.server.errors.DisseminationException;
 import org.fcrepo.server.errors.GeneralException;
-import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.ServerException;
-import org.fcrepo.server.errors.ServerInitializationException;
 import org.fcrepo.server.security.Authorization;
 import org.fcrepo.server.security.BackendPolicies;
 import org.fcrepo.server.security.BackendSecurity;
@@ -57,9 +50,6 @@ public class DisseminationService {
     private static final Logger logger =
             LoggerFactory.getLogger(DisseminationService.class);
 
-    /** The Fedora Server instance */
-    private static Server s_server;
-
     /**
      * Signifies the special type of address location known as LOCAL. An address
      * location of LOCAL implies that no remote host name is required for the
@@ -78,75 +68,26 @@ public class DisseminationService {
     private static int counter = 0;
 
     /** Datastream Mediation control flag. */
-    private static boolean doDatastreamMediation;
+    private final boolean m_doDatastreamMediation;
 
     /** Configured Fedora server host */
-    private static String fedoraServerHost = null;
+    private final String m_fedora_ServerHost;
 
     /** Configured Fedora server port */
-    private static String fedoraServerPort = null;
+    private final String m_fedoraServerPort;
 
     /** Configured Fedora application server context */
-    private static String fedoraAppServerContext = null;
+    private final String m_fedoraAppServerContext;
 
     /** Configured Fedora redirect port */
-    private static String fedoraServerRedirectPort = null;
+    private final String m_fedoraServerRedirectPort;
 
-    private static String fedoraHome = null;
+    private final BackendSecuritySpec m_beSS;
 
-    private static BackendSecuritySpec m_beSS = null;
+    private final ExternalContentManager m_ecm;
 
-    private static BackendSecurity m_beSecurity;
-
-    private static ExternalContentManager s_ecm;
+    private final Authorization m_auth;
     /** Make sure we have a server instance for error logging purposes. */
-    static {
-        try {
-            fedoraHome = Constants.FEDORA_HOME;
-            if (fedoraHome == null) {
-                throw new ServerInitializationException("[DisseminationService] Server failed to initialize: "
-                        + "FEDORA_HOME is undefined");
-            } else {
-                s_server = Server.getInstance(new File(fedoraHome), false);
-                fedoraServerHost = s_server.getParameter("fedoraServerHost");
-                fedoraServerPort = s_server.getParameter("fedoraServerPort");
-                fedoraAppServerContext = s_server.getParameter("fedoraAppServerContext");
-                fedoraServerRedirectPort =
-                        s_server.getParameter("fedoraRedirectPort");
-                m_beSecurity =
-                        (BackendSecurity) s_server
-                                .getModule("org.fcrepo.server.security.BackendSecurity");
-                m_beSS = m_beSecurity.getBackendSecuritySpec();
-                String expireLimit =
-                        s_server.getParameter("datastreamExpirationLimit");
-                if (expireLimit == null || expireLimit.equalsIgnoreCase("")) {
-                    logger.info("datastreamExpirationLimit unspecified; defaulting to "
-                                    + "300 seconds");
-                    datastreamExpirationLimit = 300;
-                } else {
-                    datastreamExpirationLimit =
-                            new Integer(expireLimit).intValue();
-                    logger.info("datastreamExpirationLimit="
-                            + datastreamExpirationLimit);
-                }
-                String dsMediation =
-                        s_server.getModule("org.fcrepo.server.access.Access")
-                                .getParameter("doMediateDatastreams");
-                if (dsMediation == null || dsMediation.equalsIgnoreCase("")) {
-                    logger.info("doMediateDatastreams unspecified; defaulting to false");
-                } else {
-                    doDatastreamMediation =
-                            new Boolean(dsMediation).booleanValue();
-                }
-
-            }
-            s_ecm =   (ExternalContentManager)
-            s_server.getModule("org.fcrepo.server.storage.ExternalContentManager");
-
-        } catch (InitializationException ie) {
-            logger.error("Initialization error", ie);
-        }
-    }
 
     /** The hashtable containing information required for datastream mediation. */
     protected static Hashtable<String, DatastreamMediation> dsRegistry = new Hashtable<String, DatastreamMediation>(1000);
@@ -161,7 +102,42 @@ public class DisseminationService {
      * requests.
      * </p>
      */
-    public DisseminationService() {
+    public DisseminationService(Server server) {
+        m_fedora_ServerHost = server.getParameter("fedoraServerHost");
+        m_fedoraServerPort = server.getParameter("fedoraServerPort");
+        m_fedoraAppServerContext = server.getParameter("fedoraAppServerContext");
+        m_fedoraServerRedirectPort =
+                server.getParameter("fedoraRedirectPort");
+        BackendSecurity beSecurity =
+                (BackendSecurity) server
+                        .getModule("org.fcrepo.server.security.BackendSecurity");
+        m_beSS = beSecurity.getBackendSecuritySpec();
+        String expireLimit =
+                server.getParameter("datastreamExpirationLimit");
+        if (expireLimit == null || expireLimit.equalsIgnoreCase("")) {
+            logger.info("datastreamExpirationLimit unspecified; defaulting to "
+                            + "300 seconds");
+            datastreamExpirationLimit = 300;
+        } else {
+            datastreamExpirationLimit =
+                    new Integer(expireLimit).intValue();
+            logger.info("datastreamExpirationLimit="
+                    + datastreamExpirationLimit);
+        }
+        String dsMediation =
+                server.getModule("org.fcrepo.server.access.Access")
+                        .getParameter("doMediateDatastreams");
+        if (dsMediation == null || dsMediation.equalsIgnoreCase("")) {
+            logger.info("doMediateDatastreams unspecified; defaulting to false");
+            m_doDatastreamMediation = false;
+        } else {
+            m_doDatastreamMediation = new Boolean(dsMediation).booleanValue();
+        }
+
+        m_ecm =   (ExternalContentManager)
+            server.getModule("org.fcrepo.server.storage.ExternalContentManager");
+
+        m_auth = (Authorization) server.getModule("org.fcrepo.server.security.Authorization");
     }
 
     /*
@@ -232,9 +208,7 @@ public class DisseminationService {
             // method, multiple rows will be present; otherwise there is only
             // a single row.
             for (int i = 0; i < dissBindInfoArray.length; i++) {
-                ((Authorization) s_server
-                        .getModule("org.fcrepo.server.security.Authorization"))
-                        .enforce_Internal_DSState(context,
+                m_auth.enforce_Internal_DSState(context,
                                                   dissBindInfoArray[i].dsID,
                                                   dissBindInfoArray[i].dsState);
                 dissBindInfo = dissBindInfoArray[i];
@@ -315,8 +289,8 @@ public class DisseminationService {
                          * locations in the file
                          */
                         dissURL = dissURL.replaceAll(
-                                fedoraServerHost + ":"  + fedoraServerPort + "/fedora/",
-                                fedoraServerHost + ":" + fedoraServerPort + "/" + fedoraAppServerContext + "/");
+                                m_fedora_ServerHost + ":"  + m_fedoraServerPort + "/fedora/",
+                                m_fedora_ServerHost + ":" + m_fedoraServerPort + "/" + m_fedoraAppServerContext + "/");
                     }
                     protocolType = dissBindInfo.ProtocolType;
                 }
@@ -350,19 +324,19 @@ public class DisseminationService {
                                 .booleanValue();
                 String dsMediatedServletPath = null;
                 if (callbackBasicAuth) {
-                    dsMediatedServletPath = "/" + fedoraAppServerContext + "/getDSAuthenticated?id=";
+                    dsMediatedServletPath = "/" + m_fedoraAppServerContext + "/getDSAuthenticated?id=";
                 } else {
-                    dsMediatedServletPath = "/" + fedoraAppServerContext + "/getDS?id=";
+                    dsMediatedServletPath = "/" + m_fedoraAppServerContext + "/getDS?id=";
                 }
                 String dsMediatedCallbackHost = null;
                 if (callbackSSL) {
                     dsMediatedCallbackHost =
-                            "https://" + fedoraServerHost + ":"
-                                    + fedoraServerRedirectPort;
+                            "https://" + m_fedora_ServerHost + ":"
+                                    + m_fedoraServerRedirectPort;
                 } else {
                     dsMediatedCallbackHost =
-                            "http://" + fedoraServerHost + ":"
-                                    + fedoraServerPort;
+                            "http://" + m_fedora_ServerHost + ":"
+                                    + m_fedoraServerPort;
                 }
                 String datastreamResolverServletURL =
                         dsMediatedCallbackHost + dsMediatedServletPath;
@@ -418,7 +392,7 @@ public class DisseminationService {
                 if (nextKey.equalsIgnoreCase(currentKey) & i != numElements) {
                     // Case where binding keys are equal which means that multiple
                     // datastreams matched the same binding key.
-                    if (doDatastreamMediation
+                    if (m_doDatastreamMediation
                             && !dissBindInfo.dsControlGroupType
                                     .equalsIgnoreCase("R")) {
                         // Use Datastream Mediation (except for redirected datastreams).
@@ -460,7 +434,7 @@ public class DisseminationService {
                     }
                 } else {
                     // Case where there are one or more binding keys.
-                    if (doDatastreamMediation
+                    if (m_doDatastreamMediation
                             && !dissBindInfo.dsControlGroupType
                                     .equalsIgnoreCase("R")) {
                         // Use Datastream Mediation (except for Redirected datastreams)
@@ -681,7 +655,7 @@ public class DisseminationService {
                             beServiceCallPassword);
                     params.setBypassBackend(true);
                     params.setContext(context);
-                    dissemination = s_ecm.getExternalContent(params);
+                    dissemination = m_ecm.getExternalContent(params);
                 }
 
             } else if (protocolType.equalsIgnoreCase("soap")) {
@@ -695,7 +669,7 @@ public class DisseminationService {
             } else if (protocolType.equalsIgnoreCase("file")) {
                 ContentManagerParams params = new ContentManagerParams(dissURL);
                 params.setContext(context);
-                dissemination = s_ecm.getExternalContent(params);
+                dissemination = m_ecm.getExternalContent(params);
             }
             else {
                 String message =
@@ -980,7 +954,7 @@ public class DisseminationService {
         String dsLocation = null;
         if (s.length == 3) {
             dsLocation =
-                    callbackHost + "/" + fedoraAppServerContext + "/get/" + s[0] + "/" + s[1] + "/"
+                    callbackHost + "/" + m_fedoraAppServerContext + "/get/" + s[0] + "/" + s[1] + "/"
                             + DateUtility.convertDateToString(dsCreateDT);
 
         } else {

@@ -359,6 +359,10 @@
       <artifactId>jersey-multipart</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.sun.jersey.contribs</groupId>
+      <artifactId>jersey-spring</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.sun.xml.stream</groupId>
       <artifactId>sjsxp</artifactId>
       <version>1.0.1</version>
@@ -640,6 +644,10 @@
       <version>2.1.4</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+    </dependency>
     <!-- Note: No demonstrated evidence of use. DWD 9/15/2009 -->
     <dependency>
       <groupId>org.fcrepo</groupId>

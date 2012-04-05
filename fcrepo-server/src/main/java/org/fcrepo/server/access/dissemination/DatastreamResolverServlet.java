@@ -4,21 +4,17 @@
  */
 package org.fcrepo.server.access.dissemination;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-
 import java.sql.Timestamp;
-
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,7 +22,7 @@ import org.fcrepo.common.Constants;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.Server;
-import org.fcrepo.server.errors.InitializationException;
+import org.fcrepo.server.SpringServlet;
 import org.fcrepo.server.errors.authorization.AuthzException;
 import org.fcrepo.server.errors.authorization.AuthzOperationalException;
 import org.fcrepo.server.errors.servletExceptionExtensions.RootException;
@@ -66,18 +62,14 @@ import org.slf4j.LoggerFactory;
  * @author Ross Wayland
  */
 public class DatastreamResolverServlet
-        extends HttpServlet {
+        extends SpringServlet {
 
     private static final Logger logger =
             LoggerFactory.getLogger(DatastreamResolverServlet.class);
 
     private static final long serialVersionUID = 1L;
 
-    private static Server s_server;
-
-    private static DOManager m_manager;
-
-    private static Hashtable dsRegistry;
+    private DOManager m_manager;
 
     private static int datastreamMediationLimit;
 
@@ -96,19 +88,18 @@ public class DatastreamResolverServlet
      *         If the servlet cannot be initialized.
      */
     @Override
-    public void init() throws ServletException {
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
         try {
-            s_server =
-                    Server.getInstance(new File(Constants.FEDORA_HOME), false);
-            fedoraServerPort = s_server.getParameter("fedoraServerPort");
+            fedoraServerPort = m_server.getParameter("fedoraServerPort");
             fedoraServerRedirectPort =
-                    s_server.getParameter("fedoraRedirectPort");
-            fedoraServerHost = s_server.getParameter("fedoraServerHost");
+                    m_server.getParameter("fedoraRedirectPort");
+            fedoraServerHost = m_server.getParameter("fedoraServerHost");
             m_manager =
-                    (DOManager) s_server
+                    (DOManager) m_server
                             .getModule("org.fcrepo.server.storage.DOManager");
             String expireLimit =
-                    s_server.getParameter("datastreamMediationLimit");
+                    m_server.getParameter("datastreamMediationLimit");
             if (expireLimit == null || expireLimit.equalsIgnoreCase("")) {
                 logger.info("datastreamMediationLimit unspecified, using default "
                         + "of 5 seconds");
@@ -118,9 +109,6 @@ public class DatastreamResolverServlet
                 logger.info("datastreamMediationLimit: "
                         + datastreamMediationLimit);
             }
-        } catch (InitializationException ie) {
-            throw new ServletException("Unable to get an instance of Fedora server "
-                    + "-- " + ie.getMessage());
         } catch (Throwable th) {
             logger.error("Error initializing servlet", th);
         }
@@ -193,12 +181,11 @@ public class DatastreamResolverServlet
             id = id.replaceAll("T", " ").replaceAll("/", "").trim();
 
             // Get in-memory hashtable of mappings from Fedora server.
-            ds = new DisseminationService();
-            dsRegistry = DisseminationService.dsRegistry;
-            DatastreamMediation dm = (DatastreamMediation) dsRegistry.get(id);
+            ds = new DisseminationService(m_server);
+            DatastreamMediation dm = DisseminationService.dsRegistry.get(id);
             if (dm == null) {
                 StringBuffer entries = new StringBuffer();
-                Iterator eIter = dsRegistry.keySet().iterator();
+                Iterator eIter = DisseminationService.dsRegistry.keySet().iterator();
                 while (eIter.hasNext()) {
                     entries.append("'" + (String) eIter.next() + "' ");
                 }
@@ -434,7 +421,7 @@ public class DatastreamResolverServlet
                 // Datastream is ReferencedExternalContent so dsLocation is a
                 // URL string
                 ExternalContentManager externalContentManager =
-                        (ExternalContentManager) s_server
+                        (ExternalContentManager) m_server
                                 .getModule("org.fcrepo.server.storage.ExternalContentManager");
                 ContentManagerParams params = new ContentManagerParams(dsPhysicalLocation);
                 params.setContext(context);
@@ -542,8 +529,12 @@ public class DatastreamResolverServlet
             if (outStream != null) {
                 outStream.close();
             }
-            dsRegistry.remove(id);
+            DisseminationService.dsRegistry.remove(id);
         }
+    }
+
+    private void doReferenced(HttpServletRequest request, HttpServletResponse response){
+
     }
 
     // Clean up resources

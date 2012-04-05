@@ -4,7 +4,11 @@
  */
 package org.fcrepo.server.messaging;
 
+import java.lang.reflect.Method;
+import java.util.Date;
+
 import junit.framework.JUnit4TestAdapter;
+
 import org.fcrepo.common.Constants;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.MockContext;
@@ -16,9 +20,6 @@ import org.fcrepo.test.FedoraTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.lang.reflect.Method;
-import java.util.Date;
 
 
 /**
@@ -120,7 +121,7 @@ public class AtomAPIMMessageTest extends FedoraTestCase {
         assertEquals("demo:foo", message.getPID().toString());
         assertEquals(baseURL, message.getBaseUrl());
 
-        DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
+        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,null);
         ds.DatastreamID = "DS1";
         ds.DSVersionID = "DS1.0";
         ds.DSControlGrp = "X";

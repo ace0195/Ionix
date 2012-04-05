@@ -4,17 +4,17 @@
  */
 package org.fcrepo.server.validation;
 
+import static org.fcrepo.server.security.TestPolicyParser.POLICY_GOODENOUGH;
+import static org.fcrepo.server.security.TestPolicyParser.POLICY_QUESTIONABLE;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
-
-import org.junit.Test;
-
-import org.xml.sax.SAXException;
 
 import junit.framework.JUnit4TestAdapter;
 
 import org.fcrepo.common.FaultException;
 import org.fcrepo.common.PID;
-
 import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.errors.ValidationException;
 import org.fcrepo.server.security.MockPolicyParser;
@@ -25,12 +25,8 @@ import org.fcrepo.server.storage.types.BasicDigitalObject;
 import org.fcrepo.server.storage.types.DatastreamXMLMetadata;
 import org.fcrepo.server.storage.types.DigitalObject;
 import org.fcrepo.server.storage.types.ObjectBuilder;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import static org.fcrepo.server.security.TestPolicyParser.POLICY_GOODENOUGH;
-import static org.fcrepo.server.security.TestPolicyParser.POLICY_QUESTIONABLE;
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
 /**
  * Unit tests for ValidationUtility.
@@ -229,23 +225,23 @@ public class ValidationUtilityTest {
             throws IOException, SAXException, ValidationException {
         ValidationUtility.setPolicyParser(parser);
         // need a datastream to validate
-        DatastreamXMLMetadata dsxml = new DatastreamXMLMetadata();
-        dsxml.xmlContent = policy.getBytes();
+        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING, null);
+        ds.xmlContent = policy.getBytes();
 
         ValidationUtility.validateReservedDatastream(PID.getInstance(TEST_PID),
                                                      "POLICY",
-                                                     dsxml);
+                                                     ds);
     }
 
     private static void validateRels(String dsId, String rels)
             throws ValidationException {
         // need a datastream to validate
-        DatastreamXMLMetadata dsxml = new DatastreamXMLMetadata();
-        dsxml.xmlContent = rels.getBytes();
+        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING, null);
+        ds.xmlContent = rels.getBytes();
 
         ValidationUtility.validateReservedDatastream(PID.getInstance(TEST_PID),
                                                      dsId,
-                                                     dsxml);
+                                                     ds);
     }
 
     private static void validateReserved(PolicyParser parser, String[] dsData)

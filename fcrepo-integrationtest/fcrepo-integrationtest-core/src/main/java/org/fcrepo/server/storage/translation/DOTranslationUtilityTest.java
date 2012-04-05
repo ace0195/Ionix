@@ -4,26 +4,22 @@
  */
 package org.fcrepo.server.storage.translation;
 
+import static org.fcrepo.server.storage.translation.DOTranslationUtility.DESERIALIZE_INSTANCE;
+import static org.fcrepo.server.storage.translation.DOTranslationUtility.SERIALIZE_EXPORT_ARCHIVE;
+import static org.fcrepo.server.storage.translation.DOTranslationUtility.SERIALIZE_EXPORT_MIGRATE;
+import static org.fcrepo.server.storage.translation.DOTranslationUtility.SERIALIZE_EXPORT_PUBLIC;
+import static org.fcrepo.server.storage.translation.DOTranslationUtility.SERIALIZE_STORAGE_INTERNAL;
+
 import java.io.ByteArrayInputStream;
-
 import java.util.List;
-
-import org.junit.After;
-import org.junit.Test;
 
 import org.fcrepo.server.storage.types.AuditRecord;
 import org.fcrepo.server.storage.types.Datastream;
 import org.fcrepo.server.storage.types.DatastreamXMLMetadata;
 import org.fcrepo.test.FedoraTestCase;
 import org.fcrepo.utilities.DateUtility;
-
-
-
-import static org.fcrepo.server.storage.translation.DOTranslationUtility.DESERIALIZE_INSTANCE;
-import static org.fcrepo.server.storage.translation.DOTranslationUtility.SERIALIZE_EXPORT_ARCHIVE;
-import static org.fcrepo.server.storage.translation.DOTranslationUtility.SERIALIZE_EXPORT_MIGRATE;
-import static org.fcrepo.server.storage.translation.DOTranslationUtility.SERIALIZE_EXPORT_PUBLIC;
-import static org.fcrepo.server.storage.translation.DOTranslationUtility.SERIALIZE_STORAGE_INTERNAL;
+import org.junit.After;
+import org.junit.Test;
 
 
 /**
@@ -73,7 +69,7 @@ public class DOTranslationUtilityTest extends FedoraTestCase {
 
         // TODO also need one for internal
 
-        ds = new DatastreamXMLMetadata();
+        ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,null);
         for (ContextControlPair pair : absoluteURLPairs) {
             ds.DSControlGrp = pair.getControlGroup();
             ds.DSLocation =
@@ -90,7 +86,7 @@ public class DOTranslationUtilityTest extends FedoraTestCase {
             assertEquals(ds.DSLocation, ds2.DSLocation);
         }
 
-        ds = new DatastreamXMLMetadata();
+        ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,null);
         for (ContextControlPair pair : dissemURLPairs) {
             ds.DatastreamID = "DC";
             ds.DSControlGrp = pair.getControlGroup();
@@ -107,7 +103,7 @@ public class DOTranslationUtilityTest extends FedoraTestCase {
             assertEquals(ds.DSLocation, ds2.DSLocation);
         }
 
-        ds = new DatastreamXMLMetadata();
+        ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,null);
         for (ContextControlPair pair : localURLPairs) {
             ds.DatastreamID = "DC";
             ds.DSControlGrp = pair.getControlGroup();

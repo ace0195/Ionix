@@ -7,18 +7,11 @@ package org.fcrepo.server.storage.translation;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-
 import java.util.Date;
 
 import org.custommonkey.xmlunit.XMLTestCase;
-
-import org.jrdf.graph.URIReference;
-
-import org.junit.Before;
-
 import org.fcrepo.common.Constants;
 import org.fcrepo.common.PID;
-
 import org.fcrepo.server.Context;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.storage.types.BasicDigitalObject;
@@ -29,6 +22,8 @@ import org.fcrepo.server.storage.types.DatastreamReferencedContent;
 import org.fcrepo.server.storage.types.DatastreamXMLMetadata;
 import org.fcrepo.server.storage.types.DigitalObject;
 import org.fcrepo.server.storage.types.Disseminator;
+import org.jrdf.graph.URIReference;
+import org.junit.Before;
 
 
 
@@ -89,7 +84,7 @@ public abstract class TranslationTest
     }
 
     protected static DatastreamXMLMetadata createXDatastream(String id) {
-        DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
+        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,null);
         ds.DatastreamID = id;
         ds.DSVersionID = id + ".0";
         ds.DSControlGrp = "X";
@@ -100,16 +95,17 @@ public abstract class TranslationTest
 
     protected static DatastreamReferencedContent createRDatastream(String id,
                                                                    String url) {
-        DatastreamReferencedContent ds = new DatastreamReferencedContent();
+        DatastreamReferencedContent ds = new DatastreamReferencedContent(null);
         ds.DatastreamID = id;
         ds.DSVersionID = id + ".0";
         ds.DSControlGrp = "R";
         ds.DSLocation = url;
         return ds;
     }
-    
+
     protected static DatastreamManagedContent createMDatastream(String id, final byte [] content) {
-        DatastreamManagedContent dmc = new DatastreamManagedContent(){
+        DatastreamManagedContent dmc = new DatastreamManagedContent(null){
+            @Override
             public InputStream getContentStream(Context ctx) throws StreamIOException {
                 return new ByteArrayInputStream(content);
             }

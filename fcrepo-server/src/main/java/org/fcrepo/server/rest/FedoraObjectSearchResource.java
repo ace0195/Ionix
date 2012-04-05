@@ -5,12 +5,10 @@
 package org.fcrepo.server.rest;
 
 import java.io.CharArrayWriter;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,6 +22,8 @@ import org.fcrepo.server.Context;
 import org.fcrepo.server.search.Condition;
 import org.fcrepo.server.search.FieldSearchQuery;
 import org.fcrepo.server.search.FieldSearchResult;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -35,6 +35,8 @@ import org.fcrepo.server.search.FieldSearchResult;
  * @version $Id$
  */
 @Path("/objects")
+@Component
+@Scope("request")
 public class FedoraObjectSearchResource extends BaseRestResource {
     static final String[] SEARCHABLE_FIELDS = { "pid", "label", "state", "ownerId",
             "cDate", "mDate", "dcmDate", "title", "creator", "subject", "description",
@@ -66,12 +68,12 @@ public class FedoraObjectSearchResource extends BaseRestResource {
 
             if (wantedFields.length > 0 || sessionToken != null) {
                 if (sessionToken != null) {
-                    result = apiAService.resumeFindObjects(context, sessionToken);
+                    result = m_APIAService.resumeFindObjects(context, sessionToken);
                 } else {
                     if ((terms != null) && (terms.length() != 0)) {
-                        result = apiAService.findObjects(context, wantedFields, maxResults, new FieldSearchQuery(terms));
+                        result = m_APIAService.findObjects(context, wantedFields, maxResults, new FieldSearchQuery(terms));
                     } else {
-                        result = apiAService.findObjects(context, wantedFields, maxResults, new FieldSearchQuery(Condition.getConditions(query)));
+                        result = m_APIAService.findObjects(context, wantedFields, maxResults, new FieldSearchQuery(Condition.getConditions(query)));
                     }
                 }
             }
@@ -123,7 +125,7 @@ public class FedoraObjectSearchResource extends BaseRestResource {
 
         try {
             Context context = getContext();
-            String[] pidList = apiMService.getNextPID(context, numPIDS, namespace);
+            String[] pidList = m_APIMService.getNextPID(context, numPIDS, namespace);
             MediaType mime = RestHelper.getContentType(format);
 
             if (pidList.length > 0) {

@@ -8,9 +8,7 @@ package org.fcrepo.server.rest;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.net.URLEncoder;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,7 +29,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.fcrepo.common.http.WebClient;
 import org.fcrepo.common.http.WebClientConfiguration;
-
 import org.fcrepo.server.Context;
 import org.fcrepo.server.rest.RestUtil.RequestContent;
 import org.fcrepo.server.rest.param.DateTimeParam;
@@ -39,6 +36,8 @@ import org.fcrepo.server.storage.types.Datastream;
 import org.fcrepo.server.storage.types.DatastreamDef;
 import org.fcrepo.server.storage.types.MIMETypedStream;
 import org.fcrepo.utilities.DateUtility;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
  * A rest controller to handle CRUD operations for the Fedora datastream API
@@ -64,6 +63,8 @@ import org.fcrepo.utilities.DateUtility;
  * @version $Id$
  */
 @Path("/{pid}/datastreams")
+@Component
+@Scope("request")
 public class DatastreamResource
         extends BaseRestResource {
 
@@ -88,7 +89,7 @@ public class DatastreamResource
             Context context = getContext();
             MediaType mime = RestHelper.getContentType(format);
             DatastreamDef[] dsDefs =
-                    apiAService.listDatastreams(context, pid, asOfDateTime);
+                    m_APIAService.listDatastreams(context, pid, asOfDateTime);
 
             String output =
                     getSerializer(context).dataStreamsToXML(pid,
@@ -124,7 +125,7 @@ public class DatastreamResource
             Date asOfDateTime = DateUtility.parseDateOrNull(dateTime);
             Context context = getContext();
             Datastream dsProfile =
-                    apiMService.getDatastream(context, pid, dsID, asOfDateTime);
+                    m_APIMService.getDatastream(context, pid, dsID, asOfDateTime);
 
             if (dsProfile == null) {
                 return Response
@@ -182,7 +183,7 @@ public class DatastreamResource
         try {
             Context context = getContext();
             Datastream[] datastreamHistory =
-                    apiMService.getDatastreamHistory(context, pid, dsID);
+                    m_APIMService.getDatastreamHistory(context, pid, dsID);
 
             if (datastreamHistory == null || datastreamHistory.length == 0) {
                 return Response
@@ -230,12 +231,12 @@ public class DatastreamResource
         try {
             Date asOfDateTime = DateUtility.parseDateOrNull(dateTime);
             MIMETypedStream stream =
-                    apiAService.getDatastreamDissemination(context,
+                    m_APIAService.getDatastreamDissemination(context,
                                                            pid,
                                                            dsID,
                                                            asOfDateTime);
-            if (datastreamFilenameHelper != null) {
-                datastreamFilenameHelper
+            if (m_datastreamFilenameHelper != null) {
+                m_datastreamFilenameHelper
                         .addContentDispositionHeader(context,
                                                      pid,
                                                      dsID,
@@ -269,7 +270,7 @@ public class DatastreamResource
             Context context = getContext();
             Date startDate = DateUtility.parseDateOrNull(startDT);
             Date endDate = DateUtility.parseDateOrNull(endDT);
-            Date[] purged = apiMService.purgeDatastream(context,
+            Date[] purged = m_APIMService.purgeDatastream(context,
                                         pid,
                                         dsID,
                                         startDate,
@@ -281,7 +282,7 @@ public class DatastreamResource
             for (Date d : purged) {
                 results.add(DateUtility.convertDateToXSDString(d));
             }
-            return Response.ok(mapper.writeValueAsString(results)).build();
+            return Response.ok(m_mapper.writeValueAsString(results)).build();
         } catch (Exception ex) {
             return handleException(ex);
         }
@@ -402,7 +403,7 @@ public class DatastreamResource
             Context context = getContext();
 
             Datastream existingDS =
-                    apiMService.getDatastream(context, pid, dsID, null);
+                    m_APIMService.getDatastream(context, pid, dsID, null);
             if (!posted && versionable == null && existingDS != null){
                 versionable = existingDS.DSVersionable;
             }
@@ -416,7 +417,7 @@ public class DatastreamResource
             if (existingDS != null && existingDS.DSState.equals("D")
                     && dsState != null) {
                 if (dsState.equals("A") || dsState.equals("I")) {
-                    apiMService.setDatastreamState(context,
+                    m_APIMService.setDatastreamState(context,
                                                    pid,
                                                    dsID,
                                                    dsState,
@@ -462,10 +463,10 @@ public class DatastreamResource
                     if ((dsLocation == null || dsLocation.equals(""))
                             && ("X".equals(controlGroup) || "M"
                                     .equals(controlGroup))) {
-                        dsLocation = apiMService.putTempStream(context, is);
+                        dsLocation = m_APIMService.putTempStream(context, is);
                     }
                     dsID =
-                            apiMService.addDatastream(context,
+                            m_APIMService.addDatastream(context,
                                                       pid,
                                                       dsID,
                                                       altIDs,
@@ -489,7 +490,7 @@ public class DatastreamResource
                     if (is == null && dsLocation != null
                             && !dsLocation.equals("")) {
                         try {
-                            WebClientConfiguration webconfig = fedoraServer.getWebClientConfig();
+                            WebClientConfiguration webconfig = m_server.getWebClientConfig();
                             WebClient webClient = new WebClient(webconfig);
                             is = webClient.get(dsLocation, true);
                         } catch (IOException ioe) {
@@ -499,7 +500,7 @@ public class DatastreamResource
                                     + ioe.getMessage());
                         }
                     }
-                    apiMService.modifyDatastreamByValue(context,
+                    m_APIMService.modifyDatastreamByValue(context,
                                                         pid,
                                                         dsID,
                                                         altIDs,
@@ -518,13 +519,13 @@ public class DatastreamResource
                     if (dsLocation == null
                             && ("M".equals(existingDS.DSControlGrp))) {
                         if (is != null) {
-                            dsLocation = apiMService.putTempStream(context, is);
+                            dsLocation = m_APIMService.putTempStream(context, is);
                         } else {
                             dsLocation = null;
                         }
                     }
 
-                    apiMService.modifyDatastreamByReference(context,
+                    m_APIMService.modifyDatastreamByReference(context,
                                                             pid,
                                                             dsID,
                                                             altIDs,
@@ -542,7 +543,7 @@ public class DatastreamResource
                     if (dsState.equals("A") || dsState.equals("D")
                             || dsState.equals("I")) {
                         if (!dsState.equals(existingDS.DSState)) {
-                            apiMService.setDatastreamState(context,
+                            m_APIMService.setDatastreamState(context,
                                                            pid,
                                                            dsID,
                                                            dsState,
@@ -552,7 +553,7 @@ public class DatastreamResource
                 }
 
                 if (versionable != existingDS.DSVersionable) {
-                    apiMService.setDatastreamVersionable(context,
+                    m_APIMService.setDatastreamVersionable(context,
                                                          pid,
                                                          dsID,
                                                          versionable,
@@ -570,7 +571,7 @@ public class DatastreamResource
             }
             builder.header("Content-Type", MediaType.TEXT_XML);
             Datastream dsProfile =
-                    apiMService.getDatastream(context, pid, dsID, null);
+                    m_APIMService.getDatastream(context, pid, dsID, null);
             String xml =
                     getSerializer(context).datastreamProfileToXML(pid,
                                                                   dsID,

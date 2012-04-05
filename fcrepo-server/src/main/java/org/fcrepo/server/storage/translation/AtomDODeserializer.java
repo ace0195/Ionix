@@ -17,11 +17,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-
 import java.net.URISyntaxException;
-
 import java.text.ParseException;
-
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -30,11 +27,8 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.xml.stream.XMLStreamException;
-
 import javax.activation.MimeType;
-
-import org.apache.commons.io.IOUtils;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.ext.thread.ThreadHelper;
@@ -48,16 +42,13 @@ import org.apache.abdera.model.Person;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.util.MimeTypeHelper;
 import org.apache.abdera.xpath.XPath;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.apache.commons.io.IOUtils;
 import org.fcrepo.common.Constants;
 import org.fcrepo.common.MalformedPIDException;
 import org.fcrepo.common.PID;
 import org.fcrepo.common.xml.format.XMLFormat;
-
 import org.fcrepo.server.errors.ObjectIntegrityException;
+import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.errors.ValidationException;
 import org.fcrepo.server.storage.types.Datastream;
@@ -66,10 +57,11 @@ import org.fcrepo.server.storage.types.DatastreamReferencedContent;
 import org.fcrepo.server.storage.types.DatastreamXMLMetadata;
 import org.fcrepo.server.storage.types.DigitalObject;
 import org.fcrepo.server.validation.ValidationUtility;
-
 import org.fcrepo.utilities.DateUtility;
 import org.fcrepo.utilities.FileUtils;
 import org.fcrepo.utilities.NormalizedURI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -130,6 +122,7 @@ public class AtomDODeserializer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void deserialize(InputStream in,
                             DigitalObject obj,
                             String encoding,
@@ -160,7 +153,11 @@ public class AtomDODeserializer
         m_encoding = encoding;
         m_transContext = transContext;
         addObjectProperties();
-        addDatastreams();
+        try{
+            addDatastreams();
+        } catch (ServerException se){
+            throw new StreamIOException(se.getMessage(), se);
+        }
 
         DOTranslationUtility.normalizeDatastreams(m_obj,
                                                   m_transContext,
@@ -171,6 +168,7 @@ public class AtomDODeserializer
     /**
      * {@inheritDoc}
      */
+    @Override
     public DODeserializer getInstance() {
         return new AtomDODeserializer(m_format);
     }
@@ -213,7 +211,7 @@ public class AtomDODeserializer
     }
 
     private void addDatastreams() throws UnsupportedEncodingException,
-            StreamIOException, ObjectIntegrityException {
+            StreamIOException, ObjectIntegrityException, ServerException {
         m_feed.sortEntries(new UpdatedIdComparator(true));
         List<Entry> entries = m_feed.getEntries();
         for (Entry entry : entries) {
@@ -225,7 +223,7 @@ public class AtomDODeserializer
 
     private void addDatastreamVersion(Entry entry)
             throws UnsupportedEncodingException, StreamIOException,
-            ObjectIntegrityException {
+            ObjectIntegrityException, ServerException {
         IRI ref = ThreadHelper.getInReplyTo(entry).getRef();
         Entry parent = m_feed.getEntry(ref.toString());
 
@@ -242,7 +240,7 @@ public class AtomDODeserializer
     }
 
     private Datastream addInlineDatastreamVersion(Entry entry)
-            throws ObjectIntegrityException, StreamIOException {
+            throws ObjectIntegrityException, StreamIOException, ServerException {
         DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
         setDSCommonProperties(ds, entry);
         String dsId = ds.DatastreamID;
@@ -283,7 +281,7 @@ public class AtomDODeserializer
     }
 
     private Datastream addExternalReferencedDatastreamVersion(Entry entry)
-            throws ObjectIntegrityException {
+            throws ObjectIntegrityException, ServerException {
         Datastream ds = new DatastreamReferencedContent();
         setDSCommonProperties(ds, entry);
         ds.DSLocation = entry.getContentSrc().toString();
@@ -299,7 +297,7 @@ public class AtomDODeserializer
     }
 
     private Datastream addManagedDatastreamVersion(Entry entry)
-            throws StreamIOException, ObjectIntegrityException {
+            throws StreamIOException, ObjectIntegrityException, ServerException {
         Datastream ds = new DatastreamManagedContent();
         setDSCommonProperties(ds, entry);
         ds.DSLocationType = Datastream.DS_LOCATION_TYPE_INTERNAL;
@@ -633,6 +631,7 @@ public class AtomDODeserializer
             this.ascending = ascending;
         }
 
+        @Override
         public int compare(Entry o1, Entry o2) {
             Date d1 = o1.getUpdated();
             Date d2 = o2.getUpdated();

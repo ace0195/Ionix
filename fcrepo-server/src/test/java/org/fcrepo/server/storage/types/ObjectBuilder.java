@@ -4,17 +4,17 @@
  */
 package org.fcrepo.server.storage.types;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Date;
+import java.util.Iterator;
+
 import org.fcrepo.common.Models;
 import org.fcrepo.common.PID;
 import org.fcrepo.server.storage.translation.DOTranslationUtility;
 import org.fcrepo.server.storage.translation.FOXML1_1DODeserializer;
 import org.fcrepo.server.storage.translation.FOXML1_1DOSerializer;
 import org.jrdf.graph.URIReference;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Date;
-import java.util.Iterator;
 
 
 /**
@@ -23,7 +23,7 @@ import java.util.Iterator;
 public abstract class ObjectBuilder {
 
     public static void addEDatastream(DigitalObject obj, String id) {
-        DatastreamReferencedContent ds = new DatastreamReferencedContent();
+        DatastreamReferencedContent ds = new DatastreamReferencedContent(null);
         ds.DSControlGrp = "E";
         ds.DSMIME = "text/plain";
         ds.DSLocation = "http://www.example.org/e.txt";
@@ -33,7 +33,7 @@ public abstract class ObjectBuilder {
     }
 
     public static void addEDatastream(DigitalObject obj, String id, String url, String mime) {
-        DatastreamReferencedContent ds = new DatastreamReferencedContent();
+        DatastreamReferencedContent ds = new DatastreamReferencedContent(null);
         ds.DSControlGrp = "E";
         ds.DSMIME = mime;
         ds.DSLocation = url;
@@ -44,7 +44,7 @@ public abstract class ObjectBuilder {
 
 
     public static void addRDatastream(DigitalObject obj, String id) {
-        DatastreamReferencedContent ds = new DatastreamReferencedContent();
+        DatastreamReferencedContent ds = new DatastreamReferencedContent(null);
         ds.DSControlGrp = "R";
         ds.DSMIME = "text/plain";
         ds.DSLocation = "http://www.example.org/r.txt";
@@ -56,7 +56,7 @@ public abstract class ObjectBuilder {
     public static void addXDatastream(DigitalObject obj,
                                       String id,
                                       String xml) {
-        DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
+        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING, null);
         ds.DSControlGrp = "X";
         ds.DSMIME = "text/xml";
         ds.DSSize = xml.length();
@@ -71,7 +71,7 @@ public abstract class ObjectBuilder {
                                       String id,
                                       String xml,
                                       String formatURI) {
-        DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
+        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING, null);
         ds.DSControlGrp = "X";
         ds.DSMIME = "text/xml";
         ds.DSFormatURI = formatURI;
@@ -85,7 +85,7 @@ public abstract class ObjectBuilder {
 
 
     public static void addMDatastream(DigitalObject obj, String id) {
-        DatastreamManagedContent ds = new DatastreamManagedContent();
+        DatastreamManagedContent ds = new DatastreamManagedContent(null);
         ds.DSControlGrp = "M";
         ds.DSMIME = "image/jpeg";
         ds.DSLocation = "bogusLocation";

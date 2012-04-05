@@ -4,32 +4,22 @@
  */
 package org.fcrepo.server.access;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-
 import java.text.SimpleDateFormat;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.fcrepo.common.Constants;
-
 import org.fcrepo.server.Context;
 import org.fcrepo.server.ReadOnlyContext;
-import org.fcrepo.server.Server;
-import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.authorization.AuthzException;
 import org.fcrepo.server.errors.servletExceptionExtensions.BadRequest400Exception;
 import org.fcrepo.server.errors.servletExceptionExtensions.InternalError500Exception;
@@ -40,6 +30,8 @@ import org.fcrepo.server.search.FieldSearchResult;
 import org.fcrepo.server.search.ObjectFields;
 import org.fcrepo.server.utilities.DCField;
 import org.fcrepo.server.utilities.StreamUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -49,19 +41,13 @@ import org.fcrepo.server.utilities.StreamUtility;
  * @author Chris Wilper
  */
 public class FieldSearchServlet
-        extends HttpServlet
+        extends SpringAccessServlet
         implements Constants {
 
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger =
             LoggerFactory.getLogger(FieldSearchServlet.class);
-
-    /** Instance of the Server */
-    private static Server s_server = null;
-
-    /** Instance of the access subsystem */
-    private static Access s_access = null;
 
     private String[] getFieldsArray(HttpServletRequest req) {
         ArrayList<String> l = new ArrayList<String>();
@@ -343,18 +329,18 @@ public class FieldSearchServlet
             if (fieldsArray != null && fieldsArray.length > 0
                     || sessionToken != null) {
                 if (sessionToken != null) {
-                    fsr = s_access.resumeFindObjects(context, sessionToken);
+                    fsr = m_access.resumeFindObjects(context, sessionToken);
                 } else {
                     if (terms != null && terms.length() != 0) {
                         fsr =
-                                s_access
+                                m_access
                                         .findObjects(context,
                                                      fieldsArray,
                                                      maxResults,
                                                      new FieldSearchQuery(terms));
                     } else {
                         fsr =
-                                s_access
+                                m_access
                                         .findObjects(context,
                                                      fieldsArray,
                                                      maxResults,
@@ -700,20 +686,6 @@ public class FieldSearchServlet
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         doGet(request, response);
-    }
-
-    /** Gets the Fedora Server instance. */
-    @Override
-    public void init() throws ServletException {
-        try {
-            s_server =
-                    Server.getInstance(new File(Constants.FEDORA_HOME), false);
-            s_access =
-                    (Access) s_server.getModule("org.fcrepo.server.access.Access");
-        } catch (InitializationException ie) {
-            throw new ServletException("Error getting Fedora Server instance: "
-                    + ie.getMessage());
-        }
     }
 
 }

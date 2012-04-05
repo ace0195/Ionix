@@ -4,6 +4,7 @@
  */
 package org.fcrepo.server.storage.types;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -14,7 +15,11 @@ import org.fcrepo.common.Constants;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.MultiValueMap;
 import org.fcrepo.server.ReadOnlyContext;
+import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.GeneralException;
+import org.fcrepo.server.errors.ModuleInitializationException;
+import org.fcrepo.server.errors.ServerException;
+import org.fcrepo.server.errors.ServerInitializationException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.utilities.StringUtility;
 import org.fcrepo.utilities.DateUtility;
@@ -106,11 +111,18 @@ public class Datastream {
 
     public String DSChecksum;
 
+    protected final Server m_server;
+
     public static boolean autoChecksum = false;
 
     public static String defaultChecksumType = "DISABLED";
 
-    public Datastream() {
+    public Datastream(Server server) {
+        m_server = server;
+    }
+
+    public Datastream() throws ServerException {
+        this(Datastream.getStaticServer());
     }
 
     public InputStream getContentStream() throws StreamIOException {
@@ -295,7 +307,7 @@ public class Datastream {
 
     // Get a complete copy of this datastream
     public Datastream copy() {
-        Datastream ds = new Datastream();
+        Datastream ds = new Datastream(m_server);
         copy(ds);
         return ds;
     }
@@ -325,6 +337,11 @@ public class Datastream {
         target.DSLocationType = DSLocationType;
         target.DSChecksumType = DSChecksumType;
         target.DSChecksum = DSChecksum;
+    }
+
+    protected static Server getStaticServer() throws ModuleInitializationException, ServerInitializationException {
+        logger.info("Requesting registered server at " + Constants.FEDORA_HOME);
+        return Server.getInstance(new File(Constants.FEDORA_HOME),false);
     }
 
     private static final MultiValueMap beginEnvironmentMap(String messageProtocol) {

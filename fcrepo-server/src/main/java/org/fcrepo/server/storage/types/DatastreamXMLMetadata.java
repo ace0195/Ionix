@@ -16,14 +16,14 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.fcrepo.server.Context;
+import org.fcrepo.server.Server;
+import org.fcrepo.server.errors.ServerException;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
-
-import org.fcrepo.server.Context;
-
-import org.w3c.dom.Document;
-
-import org.xml.sax.SAXException;
 
 /**
  * @author Sandy Payette
@@ -52,6 +52,8 @@ public class DatastreamXMLMetadata
     /** Descriptive XML metadata */
     public final static int DESCRIPTIVE = 5;
 
+    public final static String DEFAULT_ENCODING = "UTF-8";
+
     // FIXME:xml datastream contents are held in memory...this could be expensive.
     public byte[] xmlContent;
 
@@ -63,17 +65,22 @@ public class DatastreamXMLMetadata
 
     private final String m_encoding;
 
-    public DatastreamXMLMetadata() {
-        m_encoding = "UTF-8";
+    public DatastreamXMLMetadata() throws ServerException {
+        this(DEFAULT_ENCODING);
     }
 
-    public DatastreamXMLMetadata(String encoding) {
+    public DatastreamXMLMetadata(String encoding) throws ServerException {
+        this(encoding, Datastream.getStaticServer());
+    }
+
+    public DatastreamXMLMetadata(String encoding, Server server) {
+        super(server);
         m_encoding = encoding;
     }
 
     @Override
     public Datastream copy() {
-        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(m_encoding);
+        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(m_encoding, m_server);
         copy(ds);
         if (xmlContent != null) {
             ds.xmlContent = new byte[xmlContent.length];

@@ -5,18 +5,15 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.fcrepo.common.Constants;
-
 import org.fcrepo.server.Context;
 import org.fcrepo.server.Module;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.ModuleInitializationException;
 import org.fcrepo.server.errors.ServerInitializationException;
 import org.fcrepo.server.errors.StreamIOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wrapper class for a datastream that has XML metadata.
@@ -47,6 +44,8 @@ public class XMLDatastreamProcessor {
     private static String DC_DEFAULT_CONTROLGROUP;
     private static String RELS_DEFAULT_CONTROLGROUP;
 
+    private static Server s_server;
+
     private static boolean initialized = false;
 
     protected DS_TYPE m_dsType;
@@ -75,10 +74,10 @@ public class XMLDatastreamProcessor {
         }
 
         if (controlGroup.equals("X")) {
-            m_ds = new DatastreamXMLMetadata();
+            m_ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,s_server);
             m_dsType = DS_TYPE.INLINE_XML;
         } else if (controlGroup.equals("M")) {
-            m_ds = new DatastreamManagedContent();
+            m_ds = new DatastreamManagedContent(s_server);
             m_dsType = DS_TYPE.MANAGED;
         }
         m_ds.DSControlGrp = controlGroup;
@@ -109,9 +108,9 @@ public class XMLDatastreamProcessor {
             Server server;
             // get default types of datastream (M or X) to be used for reserved datastreams
             try {
-                server = Server.getInstance(new File(Constants.FEDORA_HOME),
+                s_server = Server.getInstance(new File(Constants.FEDORA_HOME),
                                             false);
-                Module module = server.getModule("org.fcrepo.server.storage.DOManager");
+                Module module = s_server.getModule("org.fcrepo.server.storage.DOManager");
                 DC_DEFAULT_CONTROLGROUP = module.getParameter("defaultDCControlGroup");
                 RELS_DEFAULT_CONTROLGROUP = module.getParameter("defaultRELSControlGroup");
             } catch (ServerInitializationException e) {
@@ -144,10 +143,10 @@ public class XMLDatastreamProcessor {
         // create new datastream (version) based on existing datastream control group
         Datastream ds;
         if (m_dsType == DS_TYPE.INLINE_XML) {
-            ds = new DatastreamXMLMetadata();
+            ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING, s_server);
             ds.DSControlGrp = "X";
         } else if (m_dsType == DS_TYPE.MANAGED) {
-            ds = new DatastreamManagedContent();
+            ds = new DatastreamManagedContent(s_server);
             ds.DSControlGrp = "M";
         } else {
             // unhandled type is a coding error

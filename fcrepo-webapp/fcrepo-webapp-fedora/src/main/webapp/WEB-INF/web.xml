@@ -32,8 +32,7 @@
     <servlet-class>org.fcrepo.server.access.FedoraAccessServlet</servlet-class>
   </servlet>
   <servlet>
-    <display-name>Fedora Controller Servlet (start, stop, get server
-      status)</display-name>
+    <display-name>Fedora Controller Servlet (start, stop, get server status)</display-name>
     <servlet-name>ControlServlet</servlet-name>
     <servlet-class>org.fcrepo.server.ServerController</servlet-class>
     <init-param>
@@ -110,32 +109,33 @@
     <servlet-name>WSDLServlet</servlet-name>
     <servlet-class>org.fcrepo.server.access.WSDLServlet</servlet-class>
   </servlet>
-  <servlet>
-    <display-name>Fedora REST API Servlet</display-name>
-    <servlet-name>RestServlet</servlet-name>
-    <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-    <init-param>
-      <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>org.fcrepo.server.rest</param-value>
-    </init-param>
-    <init-param>
-      <param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
-      <param-value>com.sun.jersey.api.container.filter.PostReplaceFilter</param-value>
-    </init-param>
-  </servlet>
-  <servlet>
-    <display-name>Fedora REST API Upload Servlet</display-name>
-    <servlet-name>UploadRestServlet</servlet-name>
-    <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-    <init-param>
-      <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>org.fcrepo.server.upload</param-value>
-    </init-param>
-    <init-param>
-      <param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
-      <param-value>com.sun.jersey.api.container.filter.PostReplaceFilter</param-value>
-    </init-param>
-  </servlet>
+    <servlet>
+      <display-name>Fedora REST API Servlet</display-name>
+      <servlet-name>RestServlet</servlet-name>
+      <servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
+      <init-param>
+        <param-name>com.sun.jersey.config.property.packages</param-name>
+        <param-value>org.fcrepo.server.rest</param-value>
+      </init-param>
+      <init-param>
+        <param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
+        <param-value>com.sun.jersey.api.container.filter.PostReplaceFilter</param-value>
+      </init-param>
+    </servlet>
+    <servlet>
+      <display-name>Fedora REST API Upload Servlet</display-name>
+      <servlet-name>UploadRestServlet</servlet-name>
+      <servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
+      <init-param>
+        <param-name>com.sun.jersey.config.property.packages</param-name>
+        <param-value>org.fcrepo.server.upload</param-value>
+      </init-param>
+      <init-param>
+        <param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
+        <param-value>com.sun.jersey.api.container.filter.PostReplaceFilter</param-value>
+      </init-param>
+    </servlet>
+
   <servlet-mapping>
     <servlet-name>CXFServlet</servlet-name>
     <url-pattern>/services/*</url-pattern>

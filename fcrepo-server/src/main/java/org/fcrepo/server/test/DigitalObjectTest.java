@@ -1,22 +1,23 @@
 /* The contents of this file are subject to the license and copyright terms
- * detailed in the license directory at the root of the source tree (also 
+ * detailed in the license directory at the root of the source tree (also
  * available online at http://fedora-commons.org/license/).
  */
 package org.fcrepo.server.test;
 
 import java.util.Date;
 
+import junit.framework.TestCase;
+
+import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.storage.types.AuditRecord;
 import org.fcrepo.server.storage.types.BasicDigitalObject;
 import org.fcrepo.server.storage.types.Datastream;
 import org.fcrepo.server.storage.types.DigitalObject;
 
-import junit.framework.TestCase;
-
 
 /**
  * Tests the implementation of the DigitalObject interface, BasicDigitalObject.
- * 
+ *
  * @author Chris Wilper
  */
 public class DigitalObjectTest
@@ -36,7 +37,7 @@ public class DigitalObjectTest
     }
 
     @Override
-    public void setUp() {
+    public void setUp() throws ServerException {
         // init common values
         m_startTime = new Date();
         // init data object
@@ -128,7 +129,7 @@ public class DigitalObjectTest
 
         m_obj.getAuditRecords().add(m_audit3);
         m_obj.addDatastreamVersion(m_ds1_1, true);
-        
+
         m_obj.getAuditRecords().add(m_audit4);
         m_obj.addDatastreamVersion(m_ds2_0, true);
     }

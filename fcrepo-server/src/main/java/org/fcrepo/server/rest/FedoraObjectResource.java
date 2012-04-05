@@ -4,6 +4,27 @@
  */
 package org.fcrepo.server.rest;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.util.Date;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.fcrepo.common.Constants;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.access.ObjectProfile;
@@ -14,17 +35,8 @@ import org.fcrepo.server.utilities.StreamUtility;
 import org.fcrepo.utilities.DateUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.util.Date;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -34,6 +46,8 @@ import java.util.Date;
  * @version $Id$
  */
 @Path("/{pid}")
+@Component
+@Scope("request")
 public class FedoraObjectResource extends BaseRestResource {
     private final String FOXML1_1 = "info:fedora/fedora-system:FOXML-1.1";
     private final String ATOMZIP1_1 = "info:fedora/fedora-system:ATOMZip-1.1";
@@ -54,7 +68,7 @@ public class FedoraObjectResource extends BaseRestResource {
             Date asOfDateTime = DateUtility.parseDateOrNull(dateTime);
             MediaType mediaType = TEXT_XML;
 
-            Validation validation = apiMService.validate(context, pid, asOfDateTime);
+            Validation validation = m_APIMService.validate(context, pid, asOfDateTime);
 
             String xml = getSerializer(context).objectValidationToXml(validation);
             return Response.ok(xml, mediaType).build();
@@ -89,7 +103,7 @@ public class FedoraObjectResource extends BaseRestResource {
 
         try {
             Context context = getContext();
-            InputStream is = apiMService.export(context, pid, format, exportContext, encoding);
+            InputStream is = m_APIMService.export(context, pid, format, exportContext, encoding);
             MediaType mediaType = TEXT_XML;
             if (format.equals(ATOMZIP1_1)) {
                 mediaType = MediaType.valueOf(ZIP);
@@ -120,7 +134,7 @@ public class FedoraObjectResource extends BaseRestResource {
 
         try {
             Context context = getContext();
-            String[] objectHistory = apiAService.getObjectHistory(context, pid);
+            String[] objectHistory = m_APIAService.getObjectHistory(context, pid);
             String xml = getSerializer(context).objectHistoryToXml(objectHistory, pid);
             MediaType mime = RestHelper.getContentType(format);
 
@@ -152,7 +166,7 @@ public class FedoraObjectResource extends BaseRestResource {
 
         try {
             Context context = getContext();
-            InputStream is = apiMService.getObjectXML(context, pid, DEFAULT_ENC);
+            InputStream is = m_APIMService.getObjectXML(context, pid, DEFAULT_ENC);
 
             return Response.ok(is, TEXT_XML).build();
         } catch (Exception ex) {
@@ -181,7 +195,7 @@ public class FedoraObjectResource extends BaseRestResource {
         try {
             Date asOfDateTime = DateUtility.parseDateOrNull(dateTime);
             Context context = getContext();
-            ObjectProfile objProfile = apiAService.getObjectProfile(context, pid, asOfDateTime);
+            ObjectProfile objProfile = m_APIAService.getObjectProfile(context, pid, asOfDateTime);
             String xml = getSerializer(context).objectProfileToXML(objProfile, asOfDateTime);
 
             MediaType mime = RestHelper.getContentType(format);
@@ -211,7 +225,7 @@ public class FedoraObjectResource extends BaseRestResource {
             String logMessage) {
         try {
             Context context = getContext();
-            Date d = apiMService.purgeObject(context, pid, logMessage);
+            Date d = m_APIMService.purgeObject(context, pid, logMessage);
             return Response.ok(DateUtility.convertDateToXSDString(d), MediaType.TEXT_PLAIN_TYPE).build();
         } catch (Exception ex) {
             return handleException(ex);
@@ -276,7 +290,7 @@ public class FedoraObjectResource extends BaseRestResource {
             // If no content is provided, use a FOXML template
             if (is == null) {
                 if (pid == null || pid.equals("new")) {
-                    pid = apiMService.getNextPID(context, 1, namespace)[0];
+                    pid = m_APIMService.getNextPID(context, 1, namespace)[0];
                 }
 
                 if (ownerID == null || "".equals(ownerID.trim())) {
@@ -292,7 +306,7 @@ public class FedoraObjectResource extends BaseRestResource {
                 }
             }
 
-            pid = apiMService.ingest(context, is, logMessage, format, encoding, pid);
+            pid = m_APIMService.ingest(context, is, logMessage, format, encoding, pid);
 
             URI createdLocation = uriInfo.getRequestUri().resolve(URLEncoder.encode(pid, DEFAULT_ENC));
             return Response.created(createdLocation).entity(pid).build();
@@ -339,7 +353,7 @@ public class FedoraObjectResource extends BaseRestResource {
                 requestModDate = lastModifiedDate.getValue();
             }
             Date lastModDate =
-                    apiMService.modifyObject(context, pid, state, label, ownerID, logMessage, requestModDate);
+                    m_APIMService.modifyObject(context, pid, state, label, ownerID, logMessage, requestModDate);
             return Response.ok().entity(DateUtility.convertDateToXSDString(lastModDate)).build();
         } catch (Exception ex) {
             return handleException(ex);

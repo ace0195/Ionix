@@ -25,6 +25,8 @@ import org.fcrepo.server.Context;
 import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.storage.types.RelationshipTuple;
 import org.fcrepo.server.storage.types.TupleArrayTripleIterator;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import org.trippi.RDFFormat;
 import org.trippi.TripleIterator;
 import org.trippi.TrippiException;
@@ -38,6 +40,8 @@ import org.trippi.TrippiException;
  * @since 3.4.0
  */
 @Path("/{pid}/relationships")
+@Component
+@Scope("request")
 public class RelationshipResource extends BaseRestResource {
 
     /**
@@ -70,7 +74,7 @@ public class RelationshipResource extends BaseRestResource {
             subject = PID.toURI(pid);
         }
         try {
-            RelationshipTuple[] tuples = apiMService.getRelationships(context, subject, predicate);
+            RelationshipTuple[] tuples = m_APIMService.getRelationships(context, subject, predicate);
             TripleIterator it = new TupleArrayTripleIterator(new ArrayList<RelationshipTuple>(Arrays.asList(tuples)));
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -132,7 +136,7 @@ public class RelationshipResource extends BaseRestResource {
                 // assume the subject is the object as denoted by the pid
                 subject = PID.toURI(pid);
             }
-            boolean result = apiMService.addRelationship(context, subject, predicate, object, isLiteral, datatype);
+            boolean result = m_APIMService.addRelationship(context, subject, predicate, object, isLiteral, datatype);
             return Response.ok(Boolean.toString(result)).build(); // needs an entity to not be overridden with a 204
         } catch (ServerException e) {
             return handleException(e);
@@ -167,7 +171,7 @@ public class RelationshipResource extends BaseRestResource {
                 // assume the subject is the object as denoted by the pid
                 subject = PID.toURI(pid);
             }
-            boolean result = apiMService.purgeRelationship(context, subject, predicate, object, isLiteral, datatype);
+            boolean result = m_APIMService.purgeRelationship(context, subject, predicate, object, isLiteral, datatype);
             return Response.ok(Boolean.toString(result), MediaType.TEXT_PLAIN_TYPE).build();
         } catch (ServerException e) {
             return handleException(e);

@@ -14,9 +14,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -46,6 +46,7 @@ import org.fcrepo.server.storage.types.MIMETypedStream;
 import org.fcrepo.server.storage.types.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 
@@ -56,7 +57,7 @@ import org.slf4j.LoggerFactory;
  * @version $Id$
  */
 public class BaseRestResource {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseRestResource.class);
 
     static final String[] EMPTY_STRING_ARRAY = new String[0];
     static final String DEFAULT_ENC = "UTF-8";
@@ -69,13 +70,14 @@ public class BaseRestResource {
     public static final MediaType TEXT_HTML = new MediaType("text", "html");
     public static final MediaType TEXT_XML = new MediaType("text", "xml");
 
-    protected Server fedoraServer;
-    protected Management apiMService;
-    protected Access apiAService;
-    protected String fedoraServerHost;
-    protected ObjectMapper mapper;
 
-    protected DatastreamFilenameHelper datastreamFilenameHelper;
+    protected Server m_server;
+    protected Management m_APIMService;
+    protected Access m_APIAService;
+    protected String m_fedoraServerHost;
+    protected ObjectMapper m_mapper;
+
+    protected DatastreamFilenameHelper m_datastreamFilenameHelper;
 
     @javax.ws.rs.core.Context
     protected HttpServletRequest servletRequest;
@@ -87,16 +89,17 @@ public class BaseRestResource {
     protected HttpHeaders headers;
 
     public BaseRestResource() {
-        try {
-            this.fedoraServer = Server.getInstance(new File(Constants.FEDORA_HOME), false);
-            this.apiMService = (Management) fedoraServer.getModule("org.fcrepo.server.management.Management");
-            this.apiAService = (Access) fedoraServer.getModule("org.fcrepo.server.access.Access");
-            this.fedoraServerHost = fedoraServer.getParameter("fedoraServerHost");
-            datastreamFilenameHelper = new DatastreamFilenameHelper(fedoraServer, apiMService, apiAService );
-            mapper = new ObjectMapper();
-        } catch (Exception ex) {
-            throw new RestException("Unable to locate Fedora server instance", ex);
-        }
+        m_mapper = new ObjectMapper();
+    }
+
+    @Autowired
+    public void setServer(Server server) {
+        LOGGER.info("Setting server bean");
+        m_server = server;
+        m_APIMService = (Management) m_server.getModule("org.fcrepo.server.management.Management");
+        m_APIAService = (Access) m_server.getModule("org.fcrepo.server.access.Access");
+        m_fedoraServerHost = m_server.getParameter("fedoraServerHost");
+        m_datastreamFilenameHelper = new DatastreamFilenameHelper(m_server, m_APIMService, m_APIAService );
     }
 
     protected Context getContext() {
@@ -105,14 +108,14 @@ public class BaseRestResource {
     }
 
     protected DefaultSerializer getSerializer(Context context) {
-        return new DefaultSerializer(fedoraServerHost, context);
+        return new DefaultSerializer(m_fedoraServerHost, context);
     }
 
     protected void transform(String xml, String xslt, Writer out)
     throws TransformerFactoryConfigurationError,
            TransformerConfigurationException,
            TransformerException {
-        File xslFile = new File(fedoraServer.getHomeDir(), xslt);
+        File xslFile = new File(m_server.getHomeDir(), xslt);
         TransformerFactory factory = TransformerFactory.newInstance();
         if (factory.getClass().getName().equals("net.sf.saxon.TransformerFactoryImpl")) {
             factory.setAttribute(FeatureKeys.VERSION_WARNING, Boolean.FALSE);
@@ -156,20 +159,20 @@ public class BaseRestResource {
     protected Response handleException(Exception ex) {
         if (ex instanceof ObjectNotInLowlevelStorageException ||
             ex instanceof DatastreamNotFoundException) {
-            logger.warn("Resource not found: " + ex.getMessage() + "; unable to fulfill REST API request", ex);
+            LOGGER.warn("Resource not found: " + ex.getMessage() + "; unable to fulfill REST API request", ex);
             return Response.status(Status.NOT_FOUND).entity(ex.getMessage()).type("text/plain").build();
         } else if (ex instanceof AuthzException) {
-            logger.warn("Authorization failed; unable to fulfill REST API request", ex);
+            LOGGER.warn("Authorization failed; unable to fulfill REST API request", ex);
             return Response.status(Status.UNAUTHORIZED).entity(ex.getMessage()).type("text/plain").build();
         } else if (ex instanceof IllegalArgumentException) {
-            logger.warn("Bad request; unable to fulfill REST API request", ex);
+            LOGGER.warn("Bad request; unable to fulfill REST API request", ex);
             return Response.status(Status.BAD_REQUEST).entity(ex.getMessage()).type("text/plain").build();
         } else if (ex instanceof ObjectLockedException ||
                    ex instanceof DatastreamLockedException) {
-            logger.warn("Lock exception; unable to fulfill REST API request", ex);
+            LOGGER.warn("Lock exception; unable to fulfill REST API request", ex);
             return Response.status(Status.CONFLICT).entity(ex.getMessage()).type(MediaType.TEXT_PLAIN).build();
         } else if (ex instanceof ObjectValidityException){
-            logger.warn("Validation exception; unable to fulfill REST API request", ex);
+            LOGGER.warn("Validation exception; unable to fulfill REST API request", ex);
 			if (((ObjectValidityException) ex).getValidation() != null) {
 				DefaultSerializer serializer = new DefaultSerializer("n/a", getContext());
 				String errors = serializer.objectValidationToXml(((ObjectValidityException) ex).getValidation());
@@ -177,9 +180,9 @@ public class BaseRestResource {
 			} else {
 	            return Response.status(Status.BAD_REQUEST).entity(ex.getMessage()).type(MediaType.TEXT_PLAIN).build();
 			}
-        	
+
         } else {
-            logger.error("Unexpected error fulfilling REST API request", ex);
+            LOGGER.error("Unexpected error fulfilling REST API request", ex);
             throw new WebApplicationException(ex);
         }
     }

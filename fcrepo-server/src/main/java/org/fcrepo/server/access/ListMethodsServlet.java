@@ -12,8 +12,8 @@ import java.io.PipedWriter;
 import java.text.ParseException;
 import java.util.Date;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Templates;
@@ -28,7 +28,6 @@ import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.DisseminationException;
 import org.fcrepo.server.errors.GeneralException;
-import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.ObjectNotFoundException;
 import org.fcrepo.server.errors.ObjectNotInLowlevelStorageException;
 import org.fcrepo.server.errors.ServerException;
@@ -86,7 +85,7 @@ import org.slf4j.LoggerFactory;
  * @version $Id$
  */
 public class ListMethodsServlet
-        extends HttpServlet
+        extends SpringAccessServlet
         implements Constants {
 
     private static final Logger logger =
@@ -99,12 +98,6 @@ public class ListMethodsServlet
 
     /** Content type for xml. */
     private static final String CONTENT_TYPE_XML = "text/xml; charset=UTF-8";
-
-    /** Instance of the Fedora server. */
-    private static Server s_server = null;
-
-    /** Instance of the access subsystem. */
-    private static Access s_access = null;
 
     /** Portion of initial request URL from protocol up to query string */
     private String requestURI = null;
@@ -248,7 +241,7 @@ public class ListMethodsServlet
         try {
             pw = new PipedWriter();
             pr = new PipedReader(pw);
-            methodDefs = s_access.listMethods(context, PID, asOfDateTime);
+            methodDefs = m_access.listMethods(context, PID, asOfDateTime);
 
             // Object Profile found.
             // Serialize the ObjectProfile object into XML
@@ -281,7 +274,7 @@ public class ListMethodsServlet
                         new OutputStreamWriter(response.getOutputStream(),
                                                "UTF-8");
                 File xslFile =
-                        new File(s_server.getHomeDir(),
+                        new File(m_server.getHomeDir(),
                                  "access/listMethods.xslt");
                 TransformerFactory factory =
                         XmlTransformUtility.getTransformerFactory();
@@ -498,26 +491,9 @@ public class ListMethodsServlet
      *         If the servet cannot be initialized.
      */
     @Override
-    public void init() throws ServletException {
-        try {
-            s_server = Server.getInstance(new File(FEDORA_HOME), false);
-            fedoraServerHost = s_server.getParameter("fedoraServerHost");
-            s_access =
-                    (Access) s_server.getModule("org.fcrepo.server.access.Access");
-        } catch (InitializationException ie) {
-            throw new ServletException("Unable to get Fedora Server instance."
-                    + ie.getMessage());
-        }
-
-    }
-
-    /**
-     * <p>
-     * Cleans up servlet resources.
-     * </p>
-     */
-    @Override
-    public void destroy() {
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        fedoraServerHost = m_server.getParameter("fedoraServerHost");
     }
 
 }

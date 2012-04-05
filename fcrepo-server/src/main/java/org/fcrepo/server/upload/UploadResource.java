@@ -17,6 +17,8 @@ import org.fcrepo.server.management.UploadServlet;
 import org.fcrepo.server.rest.BaseRestResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import com.sun.jersey.multipart.MultiPart;
 
@@ -24,10 +26,12 @@ import com.sun.jersey.multipart.MultiPart;
  * Enables the upload of temp files for the REST API. Takes a POST request with
  * a message having media type multipart/form-data and consisting of exactly one
  * entity called "file".
- * 
+ *
  * @version $Id$
  */
 @Path("/upload")
+@Component
+@Scope("request")
 public class UploadResource extends BaseRestResource {
 
     private static final Logger logger = LoggerFactory
@@ -35,7 +39,7 @@ public class UploadResource extends BaseRestResource {
 
     /**
      * Uploads a file encoded in a multipart/form message.
-     * 
+     *
      * @param multiPart
      *            the multiPart object containing the file to be uploaded
      * @return a URI with the (custom) uploaded:// scheme and a unique
@@ -47,7 +51,7 @@ public class UploadResource extends BaseRestResource {
         final InputStream fileStream = multiPart.getBodyParts().get(0).getEntityAs(InputStream.class);
         String uploaded;
         try {
-            uploaded = apiMService.putTempStream(getContext(), fileStream);
+            uploaded = m_APIMService.putTempStream(getContext(), fileStream);
             logger.debug("File uploaded: ", uploaded);
         } catch (ServerException e) {
             logger.error(e.toString());

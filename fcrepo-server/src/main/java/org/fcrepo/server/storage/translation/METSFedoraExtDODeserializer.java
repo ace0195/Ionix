@@ -11,9 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-
 import java.text.ParseException;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,14 +22,11 @@ import java.util.List;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 import org.fcrepo.common.Constants;
 import org.fcrepo.common.xml.format.XMLFormat;
 import org.fcrepo.common.xml.namespace.XMLNamespace;
 import org.fcrepo.server.errors.ObjectIntegrityException;
+import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.errors.ValidationException;
 import org.fcrepo.server.storage.types.AuditRecord;
@@ -49,6 +44,9 @@ import org.fcrepo.utilities.Base64;
 import org.fcrepo.utilities.DateUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 
 
@@ -253,6 +251,7 @@ public class METSFedoraExtDODeserializer
     /**
      * {@inheritDoc}
      */
+    @Override
     public DODeserializer getInstance() {
         return new METSFedoraExtDODeserializer(m_format);
     }
@@ -260,6 +259,7 @@ public class METSFedoraExtDODeserializer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void deserialize(InputStream in,
                             DigitalObject obj,
                             String encoding,
@@ -285,10 +285,10 @@ public class METSFedoraExtDODeserializer
             m_parser.parse(in, this);
         } catch (IOException ioe) {
             throw new StreamIOException("Low-level stream IO problem occurred "
-                    + "while SAX parsing this object.");
+                    + "while SAX parsing this object.",ioe);
         } catch (SAXException se) {
             throw new ObjectIntegrityException("METS stream was bad : "
-                    + se.getMessage());
+                    + se.getMessage(),se);
         }
         if (!m_rootElementFound) {
             throw new ObjectIntegrityException("METS root element not found");
@@ -299,7 +299,11 @@ public class METSFedoraExtDODeserializer
         convertAudits();
         // preserve ADMID and DMDID relationships in a RELS-INT
         // datastream, if one does not already exist.
-        createRelsInt();
+        try{
+            createRelsInt();
+        } catch (ServerException se) {
+            throw new ObjectIntegrityException("Could not create RELS-INT: " + se.getMessage(),se);
+        }
 
         DOTranslationUtility.normalizeDatastreams(m_obj,
                                                   m_transContext,
@@ -553,7 +557,11 @@ public class METSFedoraExtDODeserializer
                     m_dsLocationType = Datastream.DS_LOCATION_TYPE_URL;
                     m_dsInfoType = "DATA";
                     m_dsLocation = dsLocation;
-                    instantiateDatastream(new DatastreamReferencedContent());
+                    try{
+                        instantiateDatastream(new DatastreamReferencedContent());
+                    } catch (ServerException se) {
+                        throw new SAXException(se.getMessage());
+                    }
                 } else if (m_dsControlGrp.equalsIgnoreCase("M")) {
                     // URL FORMAT VALIDATION for dsLocation:
                     // For Managed Content the URL is only checked when we are parsing a
@@ -571,7 +579,11 @@ public class METSFedoraExtDODeserializer
                     }
                     m_dsInfoType = "DATA";
                     m_dsLocation = dsLocation;
-                    instantiateDatastream(new DatastreamManagedContent());
+                    try{
+                        instantiateDatastream(new DatastreamManagedContent());
+                    } catch (ServerException se){
+                        throw new SAXException(se.getMessage());
+                    }
                 }
             } else if (localName.equals("FContent")) {
                 // In METS_EXT, the FContent element contains base64-encoded
@@ -684,10 +696,13 @@ public class METSFedoraExtDODeserializer
                     // element
                 } else {
                     // Create the right kind of datastream and add to the object
-                    DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
-                    instantiateXMLDatastream(ds);
-                    m_inXMLMetadata = false;
-                    m_localPrefixMap.clear();
+                    try {
+                        instantiateXMLDatastream(new DatastreamXMLMetadata());
+                        m_inXMLMetadata = false;
+                        m_localPrefixMap.clear();
+                    } catch (ServerException se) {
+                        throw new SAXException(se.getMessage());
+                    }
                 }
             } else {
                 // finished an element within inline xml metadata
@@ -742,6 +757,8 @@ public class METSFedoraExtDODeserializer
                             throw new SAXException(new StreamIOException("Unable to open temporary file created for binary content"));
                         } catch (IOException fnfe) {
                             throw new SAXException(new StreamIOException("Error writing to temporary file created for binary content"));
+                        } catch (ServerException se) {
+                            throw new SAXException(new StreamIOException("Error creating datastream object for binary content"));
                         }
                     }
                 }
@@ -1096,7 +1113,7 @@ public class METSFedoraExtDODeserializer
      * (or other formats in the future). If there is no pre-existing RELS-INT,
      * look for DMDID and ADMID attributes to create new RELS-INT datastream.
      */
-    private void createRelsInt() {
+    private void createRelsInt() throws ServerException {
 
         // create a new RELS-INT datastream only if one does not already exist.
         Iterator<Datastream> metsrels =
@@ -1173,7 +1190,7 @@ public class METSFedoraExtDODeserializer
 
     // Create a system-generated datastream from the RDF expression of the
     // DMDID and ADMID relationships found in the METS file.
-    private void setRDFAsDatastream(StringBuffer buf) {
+    private void setRDFAsDatastream(StringBuffer buf) throws ServerException {
 
         DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
         // set the attrs common to all datastream versions

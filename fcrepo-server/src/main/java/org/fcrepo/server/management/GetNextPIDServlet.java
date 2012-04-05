@@ -9,39 +9,30 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PipedReader;
 import java.io.PipedWriter;
-
 import java.net.URLDecoder;
-
 import java.util.Enumeration;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.fcrepo.common.Constants;
-
 import org.fcrepo.server.Context;
 import org.fcrepo.server.ReadOnlyContext;
-import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.GeneralException;
-import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.errors.authorization.AuthzException;
 import org.fcrepo.server.errors.servletExceptionExtensions.InternalError500Exception;
 import org.fcrepo.server.errors.servletExceptionExtensions.RootException;
-
 import org.fcrepo.utilities.XmlTransformUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements the "getNextPID" functionality of the Fedora Management LITE
@@ -80,7 +71,7 @@ import org.fcrepo.utilities.XmlTransformUtility;
  * @author Ross Wayland
  */
 public class GetNextPIDServlet
-        extends HttpServlet
+        extends SpringManagementServlet
         implements Constants {
 
     private static final Logger logger =
@@ -93,12 +84,6 @@ public class GetNextPIDServlet
 
     /** Content type for xml. */
     private static final String CONTENT_TYPE_XML = "text/xml; charset=UTF-8";
-
-    /** Instance of the Fedora server. */
-    private static Server s_server = null;
-
-    /** Instance of the Management subsystem. */
-    private static Management s_management = null;
 
     public static final String ACTION_LABEL = "Get Pid";
 
@@ -198,7 +183,7 @@ public class GetNextPIDServlet
             pw = new PipedWriter();
             pr = new PipedReader(pw);
             String[] pidList =
-                    s_management.getNextPID(context, numPIDs, namespace);
+                    m_management.getNextPID(context, numPIDs, namespace);
             if (pidList.length > 0) {
                 // Repository info obtained.
                 // Serialize the RepositoryInfo object into XML
@@ -227,7 +212,7 @@ public class GetNextPIDServlet
                             new OutputStreamWriter(response.getOutputStream(),
                                                    "UTF-8");
                     File xslFile =
-                            new File(s_server.getHomeDir(),
+                            new File(m_server.getHomeDir(),
                                      "management/getNextPIDInfo.xslt");
                     TransformerFactory factory =
                             XmlTransformUtility.getTransformerFactory();
@@ -358,27 +343,6 @@ public class GetNextPIDServlet
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         doGet(request, response);
-    }
-
-    /**
-     * <p>
-     * Initialize servlet.
-     * </p>
-     *
-     * @throws ServletException
-     *         If the servet cannot be initialized.
-     */
-    @Override
-    public void init() throws ServletException {
-        try {
-            s_server = Server.getInstance(new File(FEDORA_HOME), false);
-            s_management =
-                    (Management) s_server
-                            .getModule("org.fcrepo.server.management.Management");
-        } catch (InitializationException ie) {
-            throw new ServletException("Unable to get Fedora Server instance."
-                    + ie.getMessage());
-        }
     }
 
     /**

@@ -11,9 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-
 import java.text.ParseException;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,18 +23,11 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.fcrepo.common.Constants;
 import org.fcrepo.common.Models;
 import org.fcrepo.common.xml.format.XMLFormat;
-
 import org.fcrepo.server.errors.ObjectIntegrityException;
+import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.errors.ValidationException;
 import org.fcrepo.server.storage.types.AuditRecord;
@@ -50,9 +41,13 @@ import org.fcrepo.server.storage.types.DigitalObject;
 import org.fcrepo.server.storage.types.Disseminator;
 import org.fcrepo.server.utilities.StreamUtility;
 import org.fcrepo.server.validation.ValidationUtility;
-
 import org.fcrepo.utilities.Base64;
 import org.fcrepo.utilities.DateUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 
 
@@ -76,7 +71,7 @@ public class FOXMLDODeserializer
 
     private static final Logger logger =
             LoggerFactory.getLogger(FOXMLDODeserializer.class);
-    
+
     private static final SAXParserFactory spf = SAXParserFactory.newInstance();
     static {
         spf.setValidating(false);
@@ -231,6 +226,7 @@ public class FOXMLDODeserializer
     /**
      * {@inheritDoc}
      */
+    @Override
     public DODeserializer getInstance() {
         return new FOXMLDODeserializer(m_format);
     }
@@ -238,6 +234,7 @@ public class FOXMLDODeserializer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deserialize(InputStream in,
                             DigitalObject obj,
                             String encoding,
@@ -444,7 +441,11 @@ public class FOXMLDODeserializer
                     // system will set dsLocationType for E and R datastreams...
                     m_dsLocationType = Datastream.DS_LOCATION_TYPE_URL;
                     m_dsLocation = dsLocation;
-                    instantiateDatastream(new DatastreamReferencedContent());
+                    try{
+                        instantiateDatastream(new DatastreamReferencedContent());
+                    } catch (ServerException se){
+                        throw new SAXException(se.getMessage());
+                    }
                     // check if datastream is ManagedContent
                 } else if (m_dsControlGrp.equalsIgnoreCase("M")) {
                     // URL FORMAT VALIDATION for dsLocation:
@@ -463,7 +464,11 @@ public class FOXMLDODeserializer
                         m_dsLocationType = Datastream.DS_LOCATION_TYPE_INTERNAL;
                     }
                     m_dsLocation = dsLocation;
-                    instantiateDatastream(new DatastreamManagedContent());
+                    try{
+                        instantiateDatastream(new DatastreamManagedContent());
+                    } catch (ServerException se){
+                        throw new SAXException(se.getMessage());
+                    }
                 }
             } else if (localName.equals("binaryContent")) {
                 if (m_dsControlGrp.equalsIgnoreCase("M")) {
@@ -599,10 +604,14 @@ public class FOXMLDODeserializer
                     //========================
                 } else {
                     // Create the right kind of datastream and add to the object
-                    DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
-                    instantiateXMLDatastream(ds);
-                    m_inXMLMetadata = false;
-                    m_localPrefixMap.clear();
+                    try {
+                        DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
+                        instantiateXMLDatastream(ds);
+                        m_inXMLMetadata = false;
+                        m_localPrefixMap.clear();
+                    } catch (ServerException se){
+                        throw new SAXException(se.getMessage());
+                    }
                 }
             } else {
                 // finished an element within inline xml metadata
@@ -635,6 +644,8 @@ public class FOXMLDODeserializer
                     throw new SAXException(new StreamIOException("Unable to open temporary file created for binary content"));
                 } catch (IOException fnfe) {
                     throw new SAXException(new StreamIOException("Error writing to temporary file created for binary content"));
+                } catch (ServerException se) {
+                    throw new SAXException(new StreamIOException("Error creating datastream object for binary content"));
                 }
             }
             m_binaryContentTempFile = null;

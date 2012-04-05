@@ -1,17 +1,14 @@
 /* The contents of this file are subject to the license and copyright terms
- * detailed in the license directory at the root of the source tree (also 
+ * detailed in the license directory at the root of the source tree (also
  * available online at http://fedora-commons.org/license/).
  */
 package org.fcrepo.server.storage.types;
 
-import java.io.File;
 import java.io.InputStream;
-
-import org.fcrepo.common.Constants;
 
 import org.fcrepo.server.Context;
 import org.fcrepo.server.Server;
-import org.fcrepo.server.errors.InitializationException;
+import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.storage.ContentManagerParams;
 import org.fcrepo.server.storage.ExternalContentManager;
@@ -21,21 +18,26 @@ import org.fcrepo.server.storage.ExternalContentManager;
 
 /**
  * Referenced Content.
- * 
+ *
  * @author Chris Wilper
  * @version $Id$
  */
 public class DatastreamReferencedContent
         extends Datastream {
 
-    private static ExternalContentManager s_ecm;
+    private ExternalContentManager m_ecm;
 
-    public DatastreamReferencedContent() {
+    public DatastreamReferencedContent(Server server) {
+        super(server);
+    }
+
+    public DatastreamReferencedContent() throws ServerException {
+        this(Datastream.getStaticServer());
     }
 
     @Override
     public Datastream copy() {
-        DatastreamReferencedContent ds = new DatastreamReferencedContent();
+        DatastreamReferencedContent ds = new DatastreamReferencedContent(m_server);
         copy(ds);
         return ds;
     }
@@ -43,41 +45,31 @@ public class DatastreamReferencedContent
     /**
      * Gets the external content manager which is used for the retrieval of
      * content.
-     * 
-     * @return an instance of <code>ExternalContentManager</code> 
+     *
+     * @return an instance of <code>ExternalContentManager</code>
      * @throws Exception is thrown in case the server is not able to find the module.
      */
     private ExternalContentManager getExternalContentManager()
             throws Exception {
-        if (s_ecm == null) {
-            Server server;
-            try {
-                server = Server.getInstance(new File(Constants.FEDORA_HOME),
-                        false);
-                s_ecm = (ExternalContentManager) server
-                        .getModule("org.fcrepo.server.storage.ExternalContentManager");
-            } catch (InitializationException e) {
-                throw new Exception(
-                        "Unable to get ExternalContentManager Module: "
-                                + e.getMessage(), e);
-            }
+        if (m_ecm == null) {
+            m_ecm = (ExternalContentManager) m_server.getModule("org.fcrepo.server.storage.ExternalContentManager");
         }
-        return s_ecm;
+        return m_ecm;
     }
 
     /**
      * Gets an InputStream to the content of this externally-referenced
      * datastream.
-     * 
-     * <p>The DSLocation of this datastream must be non-null before invoking 
+     *
+     * <p>The DSLocation of this datastream must be non-null before invoking
      * this method.
-     * 
+     *
      * <p>If successful, the DSMIME type is automatically set based on the web
      * server's response header. If the web server doesn't send a valid
      * Content-type: header, as a last resort, the content-type is guessed by
      * using a map of common extensions to mime-types.
-     * 
-     * <p>If the content-length header is present in the response, DSSize will 
+     *
+     * <p>If the content-length header is present in the response, DSSize will
      * be set accordingly.
      *
      * @see org.fcrepo.server.storage.types.Datastream#getContentStream()
@@ -97,10 +89,10 @@ public class DatastreamReferencedContent
             throw new StreamIOException("Error getting content stream", ex);
         }
     }
-    
+
     /**
      * Returns the length of the content of this stream.
-     * @param stream the MIMETypedStream 
+     * @param stream the MIMETypedStream
      * @return length the length of the content
      */
     public long getContentLength(MIMETypedStream stream) {
@@ -116,5 +108,5 @@ public class DatastreamReferencedContent
             }
         }
         return length;
-    }    
+    }
 }
