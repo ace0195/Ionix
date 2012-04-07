@@ -153,11 +153,7 @@ public class AtomDODeserializer
         m_encoding = encoding;
         m_transContext = transContext;
         addObjectProperties();
-        try{
-            addDatastreams();
-        } catch (ServerException se){
-            throw new StreamIOException(se.getMessage(), se);
-        }
+        addDatastreams();
 
         DOTranslationUtility.normalizeDatastreams(m_obj,
                                                   m_transContext,
@@ -211,7 +207,7 @@ public class AtomDODeserializer
     }
 
     private void addDatastreams() throws UnsupportedEncodingException,
-            StreamIOException, ObjectIntegrityException, ServerException {
+            StreamIOException, ObjectIntegrityException {
         m_feed.sortEntries(new UpdatedIdComparator(true));
         List<Entry> entries = m_feed.getEntries();
         for (Entry entry : entries) {
@@ -223,7 +219,7 @@ public class AtomDODeserializer
 
     private void addDatastreamVersion(Entry entry)
             throws UnsupportedEncodingException, StreamIOException,
-            ObjectIntegrityException, ServerException {
+            ObjectIntegrityException {
         IRI ref = ThreadHelper.getInReplyTo(entry).getRef();
         Entry parent = m_feed.getEntry(ref.toString());
 
@@ -240,8 +236,13 @@ public class AtomDODeserializer
     }
 
     private Datastream addInlineDatastreamVersion(Entry entry)
-            throws ObjectIntegrityException, StreamIOException, ServerException {
-        DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
+            throws ObjectIntegrityException, StreamIOException {
+        DatastreamXMLMetadata ds = null;
+        try{
+            ds = new DatastreamXMLMetadata();
+        } catch (ServerException se){
+            throw new RuntimeException(se.getMessage(),se);
+        }
         setDSCommonProperties(ds, entry);
         String dsId = ds.DatastreamID;
         String dsvId = ds.DSVersionID;
@@ -281,8 +282,13 @@ public class AtomDODeserializer
     }
 
     private Datastream addExternalReferencedDatastreamVersion(Entry entry)
-            throws ObjectIntegrityException, ServerException {
-        Datastream ds = new DatastreamReferencedContent();
+            throws ObjectIntegrityException {
+        Datastream ds = null;
+        try{
+            ds = new DatastreamReferencedContent();
+        } catch (ServerException se) {
+            throw new RuntimeException(se.getMessage(),se);
+        }
         setDSCommonProperties(ds, entry);
         ds.DSLocation = entry.getContentSrc().toString();
         // Normalize the dsLocation for the deserialization context
@@ -297,8 +303,13 @@ public class AtomDODeserializer
     }
 
     private Datastream addManagedDatastreamVersion(Entry entry)
-            throws StreamIOException, ObjectIntegrityException, ServerException {
-        Datastream ds = new DatastreamManagedContent();
+            throws StreamIOException, ObjectIntegrityException {
+        Datastream ds = null;
+        try{
+            ds = new DatastreamManagedContent();
+        } catch (ServerException se) {
+            throw new RuntimeException(se.getMessage(),se);
+        }
         setDSCommonProperties(ds, entry);
         ds.DSLocationType = Datastream.DS_LOCATION_TYPE_INTERNAL;
 

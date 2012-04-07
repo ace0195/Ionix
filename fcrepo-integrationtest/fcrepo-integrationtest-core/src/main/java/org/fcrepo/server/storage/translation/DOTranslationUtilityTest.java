@@ -13,6 +13,8 @@ import static org.fcrepo.server.storage.translation.DOTranslationUtility.SERIALI
 import java.io.ByteArrayInputStream;
 import java.util.List;
 
+import org.fcrepo.server.MockServer;
+import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.storage.types.AuditRecord;
 import org.fcrepo.server.storage.types.Datastream;
 import org.fcrepo.server.storage.types.DatastreamXMLMetadata;
@@ -42,7 +44,7 @@ public class DOTranslationUtilityTest extends FedoraTestCase {
      * {@link org.fcrepo.server.storage.translation.DOTranslationUtility#normalizeDSLocationURLs(java.lang.String, org.fcrepo.server.storage.types.Datastream, int)}.
      */
     @Test
-    public void testNormalizeDSLocationURLs() {
+    public void testNormalizeDSLocationURLs() throws InitializationException {
         String baseURL = getBaseURL();
         Datastream ds, ds2;
         String pid = "demo:foo";
@@ -69,7 +71,7 @@ public class DOTranslationUtilityTest extends FedoraTestCase {
 
         // TODO also need one for internal
 
-        ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,null);
+        ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,new MockServer());
         for (ContextControlPair pair : absoluteURLPairs) {
             ds.DSControlGrp = pair.getControlGroup();
             ds.DSLocation =
@@ -86,7 +88,7 @@ public class DOTranslationUtilityTest extends FedoraTestCase {
             assertEquals(ds.DSLocation, ds2.DSLocation);
         }
 
-        ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,null);
+        ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,new MockServer());
         for (ContextControlPair pair : dissemURLPairs) {
             ds.DatastreamID = "DC";
             ds.DSControlGrp = pair.getControlGroup();
@@ -103,7 +105,7 @@ public class DOTranslationUtilityTest extends FedoraTestCase {
             assertEquals(ds.DSLocation, ds2.DSLocation);
         }
 
-        ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,null);
+        ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,new MockServer());
         for (ContextControlPair pair : localURLPairs) {
             ds.DatastreamID = "DC";
             ds.DSControlGrp = pair.getControlGroup();

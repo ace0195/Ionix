@@ -28,8 +28,12 @@
   </bean>
 
   <!-- REST Spring configs -->
-  <context:component-scan base-package="org.fcrepo.server.rest"/>
-  <context:component-scan base-package="org.fcrepo.server.upload"/>
+  <context:component-scan base-package="org.fcrepo.server.rest">
+    <context:include-filter type="regex" expression=".*Resource" />
+  </context:component-scan>
+  <context:component-scan base-package="org.fcrepo.server.upload">
+    <context:include-filter type="regex" expression=".*Resource" />
+  </context:component-scan>
 
   <!-- Server Spring configs -->
 <bean id="org.fcrepo.server.ServerConfiguration"

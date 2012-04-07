@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.Server;
+import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.storage.ContentManagerParams;
@@ -46,15 +47,15 @@ public class DatastreamManagedContent
 
     public static final String UPLOADED_SCHEME = "uploaded://";
 
-    private ILowlevelStorage s_llstore;
+    private ILowlevelStorage m_llstore;
 
-    private ExternalContentManager s_ecm;
+    private ExternalContentManager m_ecm;
 
     private File m_tempUploadDir;
 
     public int DSMDClass = 0;
 
-    public DatastreamManagedContent(Server server) {
+    public DatastreamManagedContent(Server server) throws InitializationException {
         super(server);
     }
 
@@ -64,16 +65,20 @@ public class DatastreamManagedContent
 
     @Override
     public Datastream copy() {
-        DatastreamManagedContent ds = new DatastreamManagedContent(m_server);
-        copy(ds);
-        return ds;
+        try{
+            DatastreamManagedContent ds = new DatastreamManagedContent(m_server);
+            copy(ds);
+            return ds;
+        } catch (InitializationException ie) {
+            throw new RuntimeException(ie.getMessage(),ie);
+        }
     }
 
     private ILowlevelStorage getLLStore() throws Exception {
-        if (s_llstore == null) {
-            s_llstore = (ILowlevelStorage) m_server.getModule(ILowlevelStorage.class.getName());
+        if (m_llstore == null) {
+            m_llstore = (ILowlevelStorage) m_server.getModule(ILowlevelStorage.class.getName());
         }
-        return s_llstore;
+        return m_llstore;
     }
     /**
      * Get the location for storing temporary uploaded files (not for general temporary files)
@@ -88,10 +93,10 @@ public class DatastreamManagedContent
     }
 
     private ExternalContentManager getExternalContentManager() throws Exception {
-        if (s_ecm == null) {
-            s_ecm = (ExternalContentManager) m_server.getModule(ExternalContentManager.class.getName());
+        if (m_ecm == null) {
+            m_ecm = (ExternalContentManager) m_server.getModule(ExternalContentManager.class.getName());
         }
-        return s_ecm;
+        return m_ecm;
     }
 
     // Note: might seem strange to pass through the Context, but DatastreamManagedContent looks after

@@ -13,6 +13,7 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.fcrepo.common.Constants;
 import org.fcrepo.common.PID;
 import org.fcrepo.server.Context;
+import org.fcrepo.server.MockServer;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.storage.types.BasicDigitalObject;
 import org.fcrepo.server.storage.types.DSBinding;
@@ -84,7 +85,10 @@ public abstract class TranslationTest
     }
 
     protected static DatastreamXMLMetadata createXDatastream(String id) {
-        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,null);
+        DatastreamXMLMetadata ds = null;
+        try {
+            ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING, new MockServer());
+        } catch (Throwable t){ }
         ds.DatastreamID = id;
         ds.DSVersionID = id + ".0";
         ds.DSControlGrp = "X";
@@ -95,7 +99,10 @@ public abstract class TranslationTest
 
     protected static DatastreamReferencedContent createRDatastream(String id,
                                                                    String url) {
-        DatastreamReferencedContent ds = new DatastreamReferencedContent(null);
+        DatastreamReferencedContent ds = null;
+        try {
+            ds = new DatastreamReferencedContent(new MockServer());
+        } catch (Throwable t) { }
         ds.DatastreamID = id;
         ds.DSVersionID = id + ".0";
         ds.DSControlGrp = "R";
@@ -104,12 +111,15 @@ public abstract class TranslationTest
     }
 
     protected static DatastreamManagedContent createMDatastream(String id, final byte [] content) {
-        DatastreamManagedContent dmc = new DatastreamManagedContent(null){
-            @Override
-            public InputStream getContentStream(Context ctx) throws StreamIOException {
-                return new ByteArrayInputStream(content);
-            }
-        };
+        DatastreamManagedContent dmc = null;
+        try {
+            dmc = new DatastreamManagedContent(new MockServer()){
+                @Override
+                public InputStream getContentStream(Context ctx) throws StreamIOException {
+                    return new ByteArrayInputStream(content);
+                }
+            };
+        } catch (Throwable t){ }; // what to do?
         dmc.DatastreamID = id;
         dmc.DSVersionID = id + ".0";
         dmc.DSControlGrp = "M";

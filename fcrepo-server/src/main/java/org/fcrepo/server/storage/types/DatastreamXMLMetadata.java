@@ -18,6 +18,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.fcrepo.server.Context;
 import org.fcrepo.server.Server;
+import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.ServerException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -66,20 +67,21 @@ public class DatastreamXMLMetadata
     private final String m_encoding;
 
     public DatastreamXMLMetadata() throws ServerException {
-        this(DEFAULT_ENCODING);
+        this(DEFAULT_ENCODING, Datastream.getStaticServer());
     }
 
     public DatastreamXMLMetadata(String encoding) throws ServerException {
         this(encoding, Datastream.getStaticServer());
     }
 
-    public DatastreamXMLMetadata(String encoding, Server server) {
+    public DatastreamXMLMetadata(String encoding, Server server) throws InitializationException {
         super(server);
         m_encoding = encoding;
     }
 
     @Override
     public Datastream copy() {
+        try{
         DatastreamXMLMetadata ds = new DatastreamXMLMetadata(m_encoding, m_server);
         copy(ds);
         if (xmlContent != null) {
@@ -90,6 +92,9 @@ public class DatastreamXMLMetadata
         }
         ds.DSMDClass = DSMDClass;
         return ds;
+        } catch (InitializationException ie) {
+            throw new RuntimeException(ie.getMessage(), ie);
+        }
     }
 
     @Override

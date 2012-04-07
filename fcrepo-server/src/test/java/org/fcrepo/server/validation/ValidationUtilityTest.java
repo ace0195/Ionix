@@ -15,6 +15,7 @@ import junit.framework.JUnit4TestAdapter;
 
 import org.fcrepo.common.FaultException;
 import org.fcrepo.common.PID;
+import org.fcrepo.server.MockServer;
 import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.errors.ValidationException;
 import org.fcrepo.server.security.MockPolicyParser;
@@ -225,7 +226,10 @@ public class ValidationUtilityTest {
             throws IOException, SAXException, ValidationException {
         ValidationUtility.setPolicyParser(parser);
         // need a datastream to validate
-        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING, null);
+        DatastreamXMLMetadata ds = null;
+        try{
+            ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING, new MockServer());
+        } catch (Throwable t) {}
         ds.xmlContent = policy.getBytes();
 
         ValidationUtility.validateReservedDatastream(PID.getInstance(TEST_PID),
@@ -236,7 +240,10 @@ public class ValidationUtilityTest {
     private static void validateRels(String dsId, String rels)
             throws ValidationException {
         // need a datastream to validate
-        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING, null);
+        DatastreamXMLMetadata ds = null;
+        try{
+            ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING, new MockServer());
+        } catch (Throwable t) {}
         ds.xmlContent = rels.getBytes();
 
         ValidationUtility.validateReservedDatastream(PID.getInstance(TEST_PID),

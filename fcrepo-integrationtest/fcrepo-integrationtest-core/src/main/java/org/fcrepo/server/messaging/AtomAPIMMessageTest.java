@@ -12,6 +12,7 @@ import junit.framework.JUnit4TestAdapter;
 import org.fcrepo.common.Constants;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.MockContext;
+import org.fcrepo.server.MockServer;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.management.Management;
 import org.fcrepo.server.storage.types.DatastreamXMLMetadata;
@@ -121,7 +122,7 @@ public class AtomAPIMMessageTest extends FedoraTestCase {
         assertEquals("demo:foo", message.getPID().toString());
         assertEquals(baseURL, message.getBaseUrl());
 
-        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,null);
+        DatastreamXMLMetadata ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,new MockServer());
         ds.DatastreamID = "DS1";
         ds.DSVersionID = "DS1.0";
         ds.DSControlGrp = "X";

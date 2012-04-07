@@ -45,7 +45,6 @@ public class UploadServlet
     private static final long serialVersionUID = 1L;
 
     /** Instance of Management subsystem (for storing uploaded files). */
-    private final Management s_management = null;
 
     /**
      * The servlet entry point. http://host:port/fedora/management/upload
@@ -76,7 +75,7 @@ public class UploadServlet
                              response);
             } else {
                 sendResponse(HttpServletResponse.SC_CREATED,
-                             s_management.putTempStream(context, in),
+                             m_management.putTempStream(context, in),
                              response);
             }
         } catch (AuthzException ae) {

@@ -50,13 +50,14 @@ public class RISearchServlet
 
     @Override
     public void init(ServletConfig config) throws ServletException {
+        super.init(config);
         ApplicationContext appContext = WebApplicationContextUtils.getRequiredWebApplicationContext(config.getServletContext());
         Server server = (Server)appContext.getBean("org.fcrepo.server.Server");
         if (server == null) throw new ServletException("Could not retrieve org.fcrepo.server.Server bean");
-       m_writer =
+        m_writer =
                 (ResourceIndex) server
                         .getModule("org.fcrepo.server.resourceIndex.ResourceIndex");
-       m_authorization =
+        m_authorization =
                     (Authorization) server
                             .getModule("org.fcrepo.server.security.Authorization");
     }

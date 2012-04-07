@@ -9,6 +9,7 @@ import org.fcrepo.common.Constants;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.Module;
 import org.fcrepo.server.Server;
+import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.ModuleInitializationException;
 import org.fcrepo.server.errors.ServerInitializationException;
 import org.fcrepo.server.errors.StreamIOException;
@@ -51,7 +52,9 @@ public class XMLDatastreamProcessor {
     protected DS_TYPE m_dsType;
 
     @SuppressWarnings("unused")
-    private XMLDatastreamProcessor() {}
+    private XMLDatastreamProcessor() {
+        init();
+    }
 
     /**
      * Construct a new XML datastream processor and the associated datastream
@@ -72,13 +75,16 @@ public class XMLDatastreamProcessor {
             // coding error if trying to handle other types of datastream
             throw new RuntimeException("XML Datastream Processor only handles DC and RELS datastreams.  Datastream ID supplied was " + dsId);
         }
-
+        try{
         if (controlGroup.equals("X")) {
             m_ds = new DatastreamXMLMetadata(DatastreamXMLMetadata.DEFAULT_ENCODING,s_server);
             m_dsType = DS_TYPE.INLINE_XML;
         } else if (controlGroup.equals("M")) {
             m_ds = new DatastreamManagedContent(s_server);
             m_dsType = DS_TYPE.MANAGED;
+        }
+        } catch (InitializationException ie){
+            throw new RuntimeException("Could not create a Datastream for " + dsId, ie);
         }
         m_ds.DSControlGrp = controlGroup;
         m_ds.DatastreamID = dsId;
@@ -90,7 +96,7 @@ public class XMLDatastreamProcessor {
      * @param ds - datastream to wrap
      */
     public XMLDatastreamProcessor(Datastream ds) {
-
+        init();
         if (ds instanceof DatastreamXMLMetadata) {
             m_ds = ds;
             m_dsType = DS_TYPE.INLINE_XML;
@@ -105,7 +111,6 @@ public class XMLDatastreamProcessor {
 
     private static void init() {
         if (!initialized) {
-            Server server;
             // get default types of datastream (M or X) to be used for reserved datastreams
             try {
                 s_server = Server.getInstance(new File(Constants.FEDORA_HOME),
@@ -138,7 +143,7 @@ public class XMLDatastreamProcessor {
      * @throws ServerInitializationException
      * @throws ModuleInitializationException
      */
-    public XMLDatastreamProcessor newVersion() throws ServerInitializationException, ModuleInitializationException {
+    public XMLDatastreamProcessor newVersion() throws InitializationException {
 
         // create new datastream (version) based on existing datastream control group
         Datastream ds;

@@ -17,6 +17,7 @@ import org.fcrepo.server.MultiValueMap;
 import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.GeneralException;
+import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.ModuleInitializationException;
 import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.ServerInitializationException;
@@ -117,8 +118,11 @@ public class Datastream {
 
     public static String defaultChecksumType = "DISABLED";
 
-    public Datastream(Server server) {
+    public Datastream(Server server) throws InitializationException {
         m_server = server;
+        if (m_server == null){
+            throw new InitializationException("Datastream requires a org.fcrepo.server.Server");
+        }
     }
 
     public Datastream() throws ServerException {
@@ -307,9 +311,13 @@ public class Datastream {
 
     // Get a complete copy of this datastream
     public Datastream copy() {
+        try{
         Datastream ds = new Datastream(m_server);
         copy(ds);
         return ds;
+        } catch (InitializationException ie){
+            throw new RuntimeException(ie.getMessage(),ie);
+        }
     }
 
     // Copy this instance into target
@@ -340,7 +348,6 @@ public class Datastream {
     }
 
     protected static Server getStaticServer() throws ModuleInitializationException, ServerInitializationException {
-        logger.info("Requesting registered server at " + Constants.FEDORA_HOME);
         return Server.getInstance(new File(Constants.FEDORA_HOME),false);
     }
 

@@ -8,6 +8,7 @@ import java.io.InputStream;
 
 import org.fcrepo.server.Context;
 import org.fcrepo.server.Server;
+import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.storage.ContentManagerParams;
@@ -27,7 +28,7 @@ public class DatastreamReferencedContent
 
     private ExternalContentManager m_ecm;
 
-    public DatastreamReferencedContent(Server server) {
+    public DatastreamReferencedContent(Server server) throws InitializationException {
         super(server);
     }
 
@@ -37,9 +38,13 @@ public class DatastreamReferencedContent
 
     @Override
     public Datastream copy() {
-        DatastreamReferencedContent ds = new DatastreamReferencedContent(m_server);
-        copy(ds);
-        return ds;
+        try{
+            DatastreamReferencedContent ds = new DatastreamReferencedContent(m_server);
+            copy(ds);
+            return ds;
+        } catch (InitializationException ie) {
+            throw new RuntimeException(ie.getMessage(),ie);
+        }
     }
 
     /**

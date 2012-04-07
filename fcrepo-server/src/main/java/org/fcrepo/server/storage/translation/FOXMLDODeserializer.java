@@ -441,11 +441,14 @@ public class FOXMLDODeserializer
                     // system will set dsLocationType for E and R datastreams...
                     m_dsLocationType = Datastream.DS_LOCATION_TYPE_URL;
                     m_dsLocation = dsLocation;
+                    DatastreamReferencedContent ds = null;
+
                     try{
-                        instantiateDatastream(new DatastreamReferencedContent());
+                        ds = new DatastreamReferencedContent();
                     } catch (ServerException se){
-                        throw new SAXException(se.getMessage());
+                        throw new RuntimeException(se.getMessage(),se);
                     }
+                    instantiateDatastream(ds);
                     // check if datastream is ManagedContent
                 } else if (m_dsControlGrp.equalsIgnoreCase("M")) {
                     // URL FORMAT VALIDATION for dsLocation:
@@ -464,11 +467,13 @@ public class FOXMLDODeserializer
                         m_dsLocationType = Datastream.DS_LOCATION_TYPE_INTERNAL;
                     }
                     m_dsLocation = dsLocation;
+                    DatastreamManagedContent ds = null;
                     try{
-                        instantiateDatastream(new DatastreamManagedContent());
+                        ds = new DatastreamManagedContent();
                     } catch (ServerException se){
-                        throw new SAXException(se.getMessage());
+                        throw new RuntimeException(se.getMessage(),se);
                     }
+                    instantiateDatastream(ds);
                 }
             } else if (localName.equals("binaryContent")) {
                 if (m_dsControlGrp.equalsIgnoreCase("M")) {
@@ -604,14 +609,15 @@ public class FOXMLDODeserializer
                     //========================
                 } else {
                     // Create the right kind of datastream and add to the object
-                    try {
-                        DatastreamXMLMetadata ds = new DatastreamXMLMetadata();
-                        instantiateXMLDatastream(ds);
-                        m_inXMLMetadata = false;
-                        m_localPrefixMap.clear();
+                    DatastreamXMLMetadata ds = null;
+                    try{
+                        ds = new DatastreamXMLMetadata();
                     } catch (ServerException se){
-                        throw new SAXException(se.getMessage());
+                        throw new RuntimeException(se.getMessage(),se);
                     }
+                    instantiateXMLDatastream(ds);
+                    m_inXMLMetadata = false;
+                    m_localPrefixMap.clear();
                 }
             } else {
                 // finished an element within inline xml metadata
@@ -639,13 +645,17 @@ public class FOXMLDODeserializer
                     m_dsLocation =
                         DatastreamManagedContent.TEMP_SCHEME
                                     + m_binaryContentTempFile.getAbsolutePath();
-                    instantiateDatastream(new DatastreamManagedContent());
+                    DatastreamManagedContent ds = null;
+                    try{
+                        ds = new DatastreamManagedContent();
+                    } catch (ServerException se){
+                        throw new RuntimeException(se.getMessage(),se);
+                    }
+                    instantiateDatastream(ds);
                 } catch (FileNotFoundException fnfe) {
                     throw new SAXException(new StreamIOException("Unable to open temporary file created for binary content"));
                 } catch (IOException fnfe) {
                     throw new SAXException(new StreamIOException("Error writing to temporary file created for binary content"));
-                } catch (ServerException se) {
-                    throw new SAXException(new StreamIOException("Error creating datastream object for binary content"));
                 }
             }
             m_binaryContentTempFile = null;
