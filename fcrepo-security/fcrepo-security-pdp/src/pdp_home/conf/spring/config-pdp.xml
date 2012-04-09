@@ -23,9 +23,9 @@
   </util:set>
   <util:list id="resourceFinderModules">
   </util:list>
-  <bean id="MelcoePDPConfigurationFactory" class="org.fcrepo.server.security.xacml.pdp.MelcoePDPConfigurationFactory" />
+  <bean id="PDPConfigurationFactory" class="org.fcrepo.server.security.PDPConfigurationFactory" />
   
-  <bean id="MelcoePDPConfig" factory-bean="MelcoePDPConfigurationFactory" factory-method="getPDPConfig">
+  <bean id="MelcoePDPConfig" factory-bean="PDPConfigurationFactory" factory-method="getPDPConfig">
     <constructor-arg ref="policyFinderModules" />
     <constructor-arg ref="attributeFinderModules" />
     <constructor-arg ref="resourceFinderModules" />

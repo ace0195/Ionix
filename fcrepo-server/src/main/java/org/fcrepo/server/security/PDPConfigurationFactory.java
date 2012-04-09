@@ -1,8 +1,7 @@
-package org.fcrepo.server.security.xacml.pdp;
+package org.fcrepo.server.security;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -34,9 +33,9 @@ import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.ResourceFinderModule;
 
 
-public class MelcoePDPConfigurationFactory {
+public class PDPConfigurationFactory {
 
-    public MelcoePDPConfigurationFactory() {
+    public PDPConfigurationFactory() {
 
     }
 
@@ -123,7 +122,7 @@ public class MelcoePDPConfigurationFactory {
         rsrc.setModules(resourceFinders);
         return new PDPConfig(attr, policy, rsrc);
     }
-    
+
     public PDPConfig getDefaultPDPConfig() {
         List<AttributeFinderModule> attributeFinders = new ArrayList<AttributeFinderModule>();
         Set<PolicyFinderModule> policyFinders = new HashSet<PolicyFinderModule>();
