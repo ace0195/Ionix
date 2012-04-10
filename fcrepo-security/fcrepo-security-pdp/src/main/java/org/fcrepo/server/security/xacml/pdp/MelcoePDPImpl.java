@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.fcrepo.server.security.xacml.pdp.data.PolicyStore;
-import org.fcrepo.server.security.xacml.util.PopulatePolicyDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +48,6 @@ public class MelcoePDPImpl
 
     private static final Logger logger =
             LoggerFactory.getLogger(MelcoePDPImpl.class);
-
-    private PolicyStore policyStore;
 
     private final PDP m_pdp;
 
@@ -95,7 +92,7 @@ public class MelcoePDPImpl
     public MelcoePDPImpl(PolicyStore policyStore, PDPConfig pdpConfig)
             throws MelcoePDPException {
         try {
-            PopulatePolicyDatabase.addDocuments(policyStore);
+            policyStore.init();
         } catch (Exception e) {
             logger.error("Error loading bootstrap FeSL policies: " + e.getMessage(), e);
             throw new MelcoePDPException("Error loading bootstrap FeSL policies", e);

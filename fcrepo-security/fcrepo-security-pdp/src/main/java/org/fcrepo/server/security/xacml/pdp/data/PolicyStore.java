@@ -17,7 +17,7 @@
 package org.fcrepo.server.security.xacml.pdp.data;
 
 import java.io.File;
-
+import java.io.FileNotFoundException;
 import java.util.List;
 
 /**
@@ -145,5 +145,12 @@ public interface PolicyStore {
      * @throws PolicyStoreException
      */
     boolean contains(File policy) throws PolicyStoreException;
+
+    /**
+     * Initialize this PolicyStore with the bootstrap policies
+     * @throws PolicyStoreException
+     * @throws FileNotFoundException
+     */
+    void init() throws PolicyStoreException, FileNotFoundException;
 
 }

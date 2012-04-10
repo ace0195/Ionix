@@ -44,6 +44,7 @@ import org.xml.sax.SAXException;
  * @version $Id$
  */
 public class FedoraPolicyStore
+extends AbstractPolicyStore
 implements PolicyStore {
 
     private static final Logger log =
@@ -92,6 +93,7 @@ implements PolicyStore {
         this.apiAService = apia;
     }
 
+    @Override
     public void init() throws PolicyStoreException {
         if (log.isDebugEnabled()) {
             Runtime runtime = Runtime.getRuntime();
