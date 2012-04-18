@@ -283,12 +283,7 @@ public class AtomDODeserializer
 
     private Datastream addExternalReferencedDatastreamVersion(Entry entry)
             throws ObjectIntegrityException {
-        Datastream ds = null;
-        try{
-            ds = new DatastreamReferencedContent();
-        } catch (ServerException se) {
-            throw new RuntimeException(se.getMessage(),se);
-        }
+        Datastream ds = new DatastreamReferencedContent();
         setDSCommonProperties(ds, entry);
         ds.DSLocation = entry.getContentSrc().toString();
         // Normalize the dsLocation for the deserialization context
@@ -304,12 +299,7 @@ public class AtomDODeserializer
 
     private Datastream addManagedDatastreamVersion(Entry entry)
             throws StreamIOException, ObjectIntegrityException {
-        Datastream ds = null;
-        try{
-            ds = new DatastreamManagedContent();
-        } catch (ServerException se) {
-            throw new RuntimeException(se.getMessage(),se);
-        }
+        Datastream ds = new DatastreamManagedContent();
         setDSCommonProperties(ds, entry);
         ds.DSLocationType = Datastream.DS_LOCATION_TYPE_INTERNAL;
 

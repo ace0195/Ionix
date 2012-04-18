@@ -441,13 +441,7 @@ public class FOXMLDODeserializer
                     // system will set dsLocationType for E and R datastreams...
                     m_dsLocationType = Datastream.DS_LOCATION_TYPE_URL;
                     m_dsLocation = dsLocation;
-                    DatastreamReferencedContent ds = null;
-
-                    try{
-                        ds = new DatastreamReferencedContent();
-                    } catch (ServerException se){
-                        throw new RuntimeException(se.getMessage(),se);
-                    }
+                    DatastreamReferencedContent ds = new DatastreamReferencedContent();
                     instantiateDatastream(ds);
                     // check if datastream is ManagedContent
                 } else if (m_dsControlGrp.equalsIgnoreCase("M")) {
@@ -467,12 +461,7 @@ public class FOXMLDODeserializer
                         m_dsLocationType = Datastream.DS_LOCATION_TYPE_INTERNAL;
                     }
                     m_dsLocation = dsLocation;
-                    DatastreamManagedContent ds = null;
-                    try{
-                        ds = new DatastreamManagedContent();
-                    } catch (ServerException se){
-                        throw new RuntimeException(se.getMessage(),se);
-                    }
+                    DatastreamManagedContent ds = new DatastreamManagedContent();
                     instantiateDatastream(ds);
                 }
             } else if (localName.equals("binaryContent")) {
@@ -645,12 +634,7 @@ public class FOXMLDODeserializer
                     m_dsLocation =
                         DatastreamManagedContent.TEMP_SCHEME
                                     + m_binaryContentTempFile.getAbsolutePath();
-                    DatastreamManagedContent ds = null;
-                    try{
-                        ds = new DatastreamManagedContent();
-                    } catch (ServerException se){
-                        throw new RuntimeException(se.getMessage(),se);
-                    }
+                    DatastreamManagedContent ds = new DatastreamManagedContent();
                     instantiateDatastream(ds);
                 } catch (FileNotFoundException fnfe) {
                     throw new SAXException(new StreamIOException("Unable to open temporary file created for binary content"));

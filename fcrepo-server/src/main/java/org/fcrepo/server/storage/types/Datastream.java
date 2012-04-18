@@ -17,9 +17,7 @@ import org.fcrepo.server.MultiValueMap;
 import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.GeneralException;
-import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.ModuleInitializationException;
-import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.ServerInitializationException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.utilities.StringUtility;
@@ -112,21 +110,35 @@ public class Datastream {
 
     public String DSChecksum;
 
-    protected final Server m_server;
+    private Server m_server;
 
     public static boolean autoChecksum = false;
 
     public static String defaultChecksumType = "DISABLED";
 
-    public Datastream(Server server) throws InitializationException {
+    public Datastream(Server server) {
         m_server = server;
-        if (m_server == null){
-            throw new InitializationException("Datastream requires a org.fcrepo.server.Server");
-        }
     }
 
-    public Datastream() throws ServerException {
-        this(Datastream.getStaticServer());
+    public Datastream() {
+        super();
+    }
+
+    public void setServer(Server server) {
+        m_server = server;
+    }
+
+    public Server getServer() {
+        if (m_server == null) {
+            try{
+                m_server = getStaticServer();
+            } catch (ServerInitializationException e){
+                throw new RuntimeException(e.toString(),e);
+            } catch (ModuleInitializationException e) {
+                throw new RuntimeException(e.toString(),e);
+            }
+        }
+        return m_server;
     }
 
     public InputStream getContentStream() throws StreamIOException {
@@ -311,18 +323,14 @@ public class Datastream {
 
     // Get a complete copy of this datastream
     public Datastream copy() {
-        try{
-        Datastream ds = new Datastream(m_server);
+        Datastream ds = new Datastream();
         copy(ds);
         return ds;
-        } catch (InitializationException ie){
-            throw new RuntimeException(ie.getMessage(),ie);
-        }
     }
 
     // Copy this instance into target
     public void copy(Datastream target) {
-
+        target.m_server = m_server;
         target.isNew = isNew;
         target.DatastreamID = DatastreamID;
         if (DatastreamAltIDs != null) {

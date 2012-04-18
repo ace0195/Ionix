@@ -77,7 +77,7 @@ public class METSFedoraExtDODeserializer
         spf.setValidating(false);
         spf.setNamespaceAware(true);
     }
-    
+
     /** The format this deserializer reads. */
     private final XMLFormat m_format;
 
@@ -557,11 +557,7 @@ public class METSFedoraExtDODeserializer
                     m_dsLocationType = Datastream.DS_LOCATION_TYPE_URL;
                     m_dsInfoType = "DATA";
                     m_dsLocation = dsLocation;
-                    try{
-                        instantiateDatastream(new DatastreamReferencedContent());
-                    } catch (ServerException se) {
-                        throw new SAXException(se.getMessage());
-                    }
+                    instantiateDatastream(new DatastreamReferencedContent());
                 } else if (m_dsControlGrp.equalsIgnoreCase("M")) {
                     // URL FORMAT VALIDATION for dsLocation:
                     // For Managed Content the URL is only checked when we are parsing a
@@ -579,11 +575,7 @@ public class METSFedoraExtDODeserializer
                     }
                     m_dsInfoType = "DATA";
                     m_dsLocation = dsLocation;
-                    try{
-                        instantiateDatastream(new DatastreamManagedContent());
-                    } catch (ServerException se){
-                        throw new SAXException(se.getMessage());
-                    }
+                    instantiateDatastream(new DatastreamManagedContent());
                 }
             } else if (localName.equals("FContent")) {
                 // In METS_EXT, the FContent element contains base64-encoded
@@ -757,8 +749,6 @@ public class METSFedoraExtDODeserializer
                             throw new SAXException(new StreamIOException("Unable to open temporary file created for binary content"));
                         } catch (IOException fnfe) {
                             throw new SAXException(new StreamIOException("Error writing to temporary file created for binary content"));
-                        } catch (ServerException se) {
-                            throw new SAXException(new StreamIOException("Error creating datastream object for binary content"));
                         }
                     }
                 }

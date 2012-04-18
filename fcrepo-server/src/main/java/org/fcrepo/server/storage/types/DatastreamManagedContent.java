@@ -15,7 +15,6 @@ import org.fcrepo.server.Context;
 import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.InitializationException;
-import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.storage.ContentManagerParams;
 import org.fcrepo.server.storage.ExternalContentManager;
@@ -59,24 +58,20 @@ public class DatastreamManagedContent
         super(server);
     }
 
-    public DatastreamManagedContent() throws ServerException {
-        this(Datastream.getStaticServer());
+    public DatastreamManagedContent() {
+        super();
     }
 
     @Override
     public Datastream copy() {
-        try{
-            DatastreamManagedContent ds = new DatastreamManagedContent(m_server);
-            copy(ds);
-            return ds;
-        } catch (InitializationException ie) {
-            throw new RuntimeException(ie.getMessage(),ie);
-        }
+        DatastreamManagedContent ds = new DatastreamManagedContent();
+        copy(ds);
+        return ds;
     }
 
     private ILowlevelStorage getLLStore() throws Exception {
         if (m_llstore == null) {
-            m_llstore = (ILowlevelStorage) m_server.getModule(ILowlevelStorage.class.getName());
+            m_llstore = (ILowlevelStorage) getServer().getModule(ILowlevelStorage.class.getName());
         }
         return m_llstore;
     }
@@ -87,14 +82,14 @@ public class DatastreamManagedContent
      */
     private File getTempUploadDir() throws Exception {
         if (m_tempUploadDir == null) {
-            m_tempUploadDir = m_server.getUploadDir();
+            m_tempUploadDir = getServer().getUploadDir();
         }
         return m_tempUploadDir;
     }
 
     private ExternalContentManager getExternalContentManager() throws Exception {
         if (m_ecm == null) {
-            m_ecm = (ExternalContentManager) m_server.getModule(ExternalContentManager.class.getName());
+            m_ecm = (ExternalContentManager) getServer().getModule(ExternalContentManager.class.getName());
         }
         return m_ecm;
     }

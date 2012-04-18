@@ -9,7 +9,6 @@ import java.io.InputStream;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.InitializationException;
-import org.fcrepo.server.errors.ServerException;
 import org.fcrepo.server.errors.StreamIOException;
 import org.fcrepo.server.storage.ContentManagerParams;
 import org.fcrepo.server.storage.ExternalContentManager;
@@ -32,19 +31,15 @@ public class DatastreamReferencedContent
         super(server);
     }
 
-    public DatastreamReferencedContent() throws ServerException {
-        this(Datastream.getStaticServer());
+    public DatastreamReferencedContent() {
+        super();
     }
 
     @Override
     public Datastream copy() {
-        try{
-            DatastreamReferencedContent ds = new DatastreamReferencedContent(m_server);
-            copy(ds);
-            return ds;
-        } catch (InitializationException ie) {
-            throw new RuntimeException(ie.getMessage(),ie);
-        }
+        DatastreamReferencedContent ds = new DatastreamReferencedContent();
+        copy(ds);
+        return ds;
     }
 
     /**
@@ -57,7 +52,7 @@ public class DatastreamReferencedContent
     private ExternalContentManager getExternalContentManager()
             throws Exception {
         if (m_ecm == null) {
-            m_ecm = (ExternalContentManager) m_server.getModule("org.fcrepo.server.storage.ExternalContentManager");
+            m_ecm = (ExternalContentManager) getServer().getModule("org.fcrepo.server.storage.ExternalContentManager");
         }
         return m_ecm;
     }

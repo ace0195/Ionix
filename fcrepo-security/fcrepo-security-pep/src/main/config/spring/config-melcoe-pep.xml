@@ -167,7 +167,7 @@
 		a handler class. The handler class is responsible for generating XACML requests or performing other
 		tasks such as filtering for searches.
 	-->
-	<util:map id="handlers-ws-access">
+	<util:map id="handlers-ws-Fedora-API-A-Service">
 		<entry key="describeRepository"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeRepositoryHandler" /></entry>
 		<entry key="getObjectProfile"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectProfileHandler" /></entry>
 		<entry key="listDatastreams"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ListDatastreamsHandler" /></entry>
@@ -178,7 +178,7 @@
 		<entry key="resumeFindObjects"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ResumeFindObjectsHandler" /></entry>
 		<entry key="getObjectHistory"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectHistoryHandler" /></entry>
 	</util:map>
-	<util:map id="handlers-ws-accessS">
+	<util:map id="handlers-ws-Fedora-API-A-MTOM-Service">
 		<entry key="describeRepository"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeRepositoryHandler" /></entry>
 		<entry key="getObjectProfile"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectProfileHandler" /></entry>
 		<entry key="listDatastreams"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ListDatastreamsHandler" /></entry>
@@ -189,10 +189,11 @@
 		<entry key="resumeFindObjects"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ResumeFindObjectsHandler" /></entry>
 		<entry key="getObjectHistory"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetObjectHistoryHandler" /></entry>
 	</util:map>
-	<util:map id="handlers-ws-management">
+	<util:map id="handlers-ws-Fedora-API-M-Service">
 		<entry key="addDatastream"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.AddDatastreamHandler" /></entry>
 		<entry key="describeUser"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeUserHandler" /></entry>
 		<entry key="export"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ExportHandler" /></entry>
+		<entry key="compareDatastreamChecksum"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.CompareDatastreamChecksumHandler" /></entry>
 		<entry key="getDatastream"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHandler" /></entry>
 		<entry key="getDatastreamHistory"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHistoryHandler" /></entry>
 		<entry key="getDatastreams"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamsHandler" /></entry>
@@ -209,11 +210,13 @@
 		<entry key="addRelationship"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.AddRelationshipHandler" /></entry>
 		<entry key="getRelationships"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetRelationshipsHandler" /></entry>
 		<entry key="purgeRelationship"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeRelationshipHandler" /></entry>
+		<entry key="validate"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ValidateHandler" /></entry>
 	</util:map>
-	<util:map id="handlers-ws-managementS">
+	<util:map id="handlers-ws-Fedora-API-M-MTOM-Service">
 		<entry key="addDatastream"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.AddDatastreamHandler" /></entry>
 		<entry key="describeUser"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.DescribeUserHandler" /></entry>
 		<entry key="export"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ExportHandler" /></entry>
+		<entry key="compareDatastreamChecksum"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.CompareDatastreamChecksumHandler" /></entry>
 		<entry key="getDatastream"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHandler" /></entry>
 		<entry key="getDatastreamHistory"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamHistoryHandler" /></entry>
 		<entry key="getDatastreams"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetDatastreamsHandler" /></entry>
@@ -230,5 +233,6 @@
 		<entry key="addRelationship"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.AddRelationshipHandler" /></entry>
 		<entry key="getRelationships"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.GetRelationshipsHandler" /></entry>
 		<entry key="purgeRelationship"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.PurgeRelationshipHandler" /></entry>
+		<entry key="validate"><bean class="org.fcrepo.server.security.xacml.pep.ws.operations.ValidateHandler" /></entry>
 	</util:map>
 </beans>
